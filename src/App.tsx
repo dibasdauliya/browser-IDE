@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Header, CodeEditor, OutputPanel, ControlButtons } from "./components";
+import {
+  Header,
+  ResizablePanels,
+  EditorPanel,
+  OutputPanel,
+} from "./components";
 import { usePyodide } from "./hooks";
 import { DEFAULT_PYTHON_CODE } from "./constants/defaultCode";
 
@@ -13,29 +18,26 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
+    <div className="h-screen bg-gray-900 text-white flex flex-col">
       <Header pyodideReady={pyodideReady} />
 
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
-        {/* Code Editor Panel */}
-        <div className="flex-1 flex flex-col">
-          <CodeEditor code={code} onChange={setCode} />
-          <div className="bg-gray-800 px-4 py-2 border-t border-gray-700">
-            <div className="flex items-center justify-end">
-              <ControlButtons
-                onRun={handleRunCode}
-                onClear={clearOutput}
-                isRunning={isRunning}
-                pyodideReady={pyodideReady}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Output Panel */}
-        <OutputPanel output={output} onClear={clearOutput} />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ResizablePanels
+          initialLeftWidth={60}
+          minLeftWidth={25}
+          minRightWidth={25}
+          leftPanel={
+            <EditorPanel
+              code={code}
+              onChange={setCode}
+              onRun={handleRunCode}
+              onClear={clearOutput}
+              isRunning={isRunning}
+              pyodideReady={pyodideReady}
+            />
+          }
+          rightPanel={<OutputPanel output={output} onClear={clearOutput} />}
+        />
       </div>
     </div>
   );
