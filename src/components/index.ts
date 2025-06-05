@@ -4,3 +4,4 @@ export { OutputPanel } from "./OutputPanel";
 export { ControlButtons } from "./ControlButtons";
 export { ResizablePanels } from "./ResizablePanels";
 export { EditorPanel } from "./EditorPanel";
+export { Navigation } from "./Navigation";
