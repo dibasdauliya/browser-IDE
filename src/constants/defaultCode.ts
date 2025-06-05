@@ -2,13 +2,7 @@ export const DEFAULT_PYTHON_CODE = `# Welcome to Python Browser IDE! 🐍
 import math
 from datetime import datetime
 
-# Variables and basic types
-name = "Pyodide"
-version = 2024
-pi_value = 3.14159
-is_awesome = True
-
-print(f"Hello from {name}! 🚀")
+print(f"Hello! 🚀")
 print(f"Current time: {datetime.now()}")
 
 # Function definition

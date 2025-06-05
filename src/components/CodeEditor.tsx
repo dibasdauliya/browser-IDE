@@ -3,20 +3,12 @@ import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
+import { searchKeymap } from "@codemirror/search";
 import {
-  autocompletion,
   completionKeymap,
-  closeBrackets,
   closeBracketsKeymap,
 } from "@codemirror/autocomplete";
-import {
-  foldGutter,
-  indentOnInput,
-  bracketMatching,
-  foldKeymap,
-} from "@codemirror/language";
-import { highlightActiveLineGutter, lineNumbers } from "@codemirror/view";
+import { foldKeymap } from "@codemirror/language";
 import { Code } from "lucide-react";
 import type { CodeEditorProps } from "../types";
 
