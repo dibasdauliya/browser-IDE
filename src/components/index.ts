@@ -5,3 +5,6 @@ export { ControlButtons } from "./ControlButtons";
 export { ResizablePanels } from "./ResizablePanels";
 export { EditorPanel } from "./EditorPanel";
 export { Navigation } from "./Navigation";
+export { FileExplorer } from "./FileExplorer";
+export { FileTabs } from "./FileTabs";
+export { FileEditorPanel } from "./FileEditorPanel";

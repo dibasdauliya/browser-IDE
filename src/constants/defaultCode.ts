@@ -1,18 +1,16 @@
-export const DEFAULT_PYTHON_CODE = `# Welcome to Python Browser IDE! 🐍
+export const DEFAULT_PYTHON_CODE = `
 import math
 from datetime import datetime
 
 print(f"Hello! 🚀")
 print(f"Current time: {datetime.now()}")
 
-# Function definition
 def calculate_fibonacci(n):
     """Calculate the nth Fibonacci number."""
     if n <= 1:
         return n
     return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
 
-# Class definition
 class Calculator:
     def __init__(self, name):
         self.name = name
@@ -23,27 +21,22 @@ class Calculator:
     def multiply(self, a, b):
         return a * b
 
-# Main execution
 if __name__ == "__main__":
     # Create calculator instance
     calc = Calculator("MyCalc")
     
-    # List comprehension
     squares = [x**2 for x in range(1, 6)]
     print(f"Squares: {squares}")
     
-    # Dictionary
     colors = {
         "red": "#FF0000",
         "green": "#00FF00", 
         "blue": "#0000FF"
     }
     
-    # Loop through dictionary
     for color, hex_code in colors.items():
         print(f"{color}: {hex_code}")
     
-    # Calculate some values
     result = calc.add(10, 20)
     fib_10 = calculate_fibonacci(10)
     

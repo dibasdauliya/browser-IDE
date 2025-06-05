@@ -1,42 +1,75 @@
-import { useState } from "react";
 import {
   Header,
   ResizablePanels,
-  EditorPanel,
   OutputPanel,
   Navigation,
+  FileExplorer,
+  FileEditorPanel,
 } from "../components";
-import { usePyodide } from "../hooks";
-import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
+import { usePyodide, useFileSystem } from "../hooks";
 
 export const PythonIDE = () => {
-  const [code, setCode] = useState(DEFAULT_PYTHON_CODE);
   const { pyodideReady, isRunning, output, runCode, clearOutput } =
     usePyodide();
+  const {
+    files,
+    activeFileId,
+    createFile,
+    deleteFile,
+    renameFile,
+    selectFile,
+    closeFile,
+    updateFileContent,
+    getActiveFile,
+    getOpenFiles,
+  } = useFileSystem();
+
+  const activeFile = getActiveFile();
+  const openFiles = getOpenFiles();
 
   const handleRunCode = () => {
-    runCode(code);
+    if (activeFile) {
+      runCode(activeFile.content);
+    }
   };
 
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col relative">
-      <Navigation />
-
-      <Header pyodideReady={pyodideReady} />
+      <Header pyodideReady={pyodideReady} leftContent={<Navigation />} />
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <ResizablePanels
-          initialLeftWidth={60}
-          minLeftWidth={25}
+          initialLeftWidth={75}
+          minLeftWidth={50}
           minRightWidth={25}
           leftPanel={
-            <EditorPanel
-              code={code}
-              onChange={setCode}
-              onRun={handleRunCode}
-              onClear={clearOutput}
-              isRunning={isRunning}
-              pyodideReady={pyodideReady}
+            <ResizablePanels
+              initialLeftWidth={25}
+              minLeftWidth={15}
+              minRightWidth={40}
+              leftPanel={
+                <FileExplorer
+                  files={files}
+                  activeFileId={activeFileId}
+                  onFileSelect={selectFile}
+                  onFileCreate={createFile}
+                  onFileDelete={deleteFile}
+                  onFileRename={renameFile}
+                />
+              }
+              rightPanel={
+                <FileEditorPanel
+                  activeFile={activeFile}
+                  openFiles={openFiles}
+                  onFileContentChange={updateFileContent}
+                  onFileTabSelect={selectFile}
+                  onFileTabClose={closeFile}
+                  onRun={handleRunCode}
+                  onClear={clearOutput}
+                  isRunning={isRunning}
+                  pyodideReady={pyodideReady}
+                />
+              }
             />
           }
           rightPanel={<OutputPanel output={output} onClear={clearOutput} />}

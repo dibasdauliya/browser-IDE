@@ -9,18 +9,17 @@ import {
   closeBracketsKeymap,
 } from "@codemirror/autocomplete";
 import { foldKeymap } from "@codemirror/language";
-import { Code } from "lucide-react";
 import type { CodeEditorProps } from "../types";
 
 export const CodeEditor = ({ code, onChange }: CodeEditorProps) => {
   return (
     <div className="h-full flex flex-col">
-      <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
+      {/* <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <Code className="w-4 h-4 text-blue-400" />
           <span className="text-sm font-medium">Python Editor</span>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex-1 min-h-0">
         <div className="h-full overflow-auto">
