@@ -1,5 +1,7 @@
 export const DEFAULT_PYTHON_CODE = `import math
 import requests
+import matplotlib.pyplot as plt
+import numpy as np
 from datetime import datetime
 
 print("🚀 Welcome to the Python Browser IDE!")
@@ -34,7 +36,32 @@ dictionary = {
 for key, value in dictionary.items():
     print(f"{key}: {value}")
 
-# Example 3: User input (works with browser prompts)
+# Example 3: Data visualization with matplotlib
+def create_sample_plot():
+    """
+    Create a sample matplotlib plot that displays inline in the output.
+    """
+    # Create sample data
+    x = np.linspace(0, 10, 100)
+    y1 = np.sin(x)
+    y2 = np.cos(x)
+    
+    # Create the plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y1, label='sin(x)', linewidth=2)
+    plt.plot(x, y2, label='cos(x)', linewidth=2)
+    plt.title('Sample Plot: Sine and Cosine Functions')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    
+    # Show the plot (will display inline in output)
+    plt.show()
+    
+    print("📊 Plot displayed above!")
+
+# Example 4: User input (works with browser prompts)
 def interactive_example():
     """
     Example showing how input() works in the browser environment.
@@ -45,7 +72,7 @@ def interactive_example():
     # print(f"Hello {name}! You are {age} years old.")
     print("Interactive example ready - uncomment the lines above to try input()!")
 
-# Example 4: Network requests (SSL warnings suppressed)
+# Example 5: Network requests (SSL warnings suppressed)
 def fetch_api_data():
     """
     Example of making HTTP requests with proper error handling.
@@ -72,6 +99,9 @@ print(f"10 + 20 = {result}")
 print(f"Fibonacci(10) = {fib_10}")
 print(f"π = {math.pi:.4f}")
 
+print(f"\\n📈 Creating sample plot...")
+create_sample_plot()
+
 print(f"\\n🎯 Interactive input example:")
 interactive_example()
 
@@ -79,9 +109,10 @@ print(f"\\n🌐 Network request example:")
 print(fetch_api_data())
 
 print(f"\\n💡 Tips:")
+print("- matplotlib plots display inline in the output panel")
 print("- input() works with browser prompts (prompt dialogs)")
 print("- SSL warnings are automatically suppressed")
-print("- Common packages (requests, numpy, pandas) are pre-installed")
+print("- Common packages (requests, numpy, matplotlib) are pre-installed")
 print("- Missing packages are auto-installed when imported")
 print("- Upload/download files using the File Explorer")
 `;

@@ -112,6 +112,68 @@ export const usePyodide = () => {
               requests.request = patched_request
             except ImportError:
               pass
+            
+            # Configure matplotlib for inline plotting
+            try:
+              import matplotlib
+              import matplotlib.pyplot as plt
+              import io
+              import base64
+              
+              # Set matplotlib to use Agg backend (no GUI, renders to buffer)
+              matplotlib.use('Agg')
+              
+              # Store reference to original show function
+              _original_show = plt.show
+              
+              # Create custom show function that captures and displays plots
+              def capture_show(*args, **kwargs):
+                  """
+                  Custom show function that captures matplotlib plots and displays them inline.
+                  """
+                  try:
+                      # Get current figure
+                      fig = plt.gcf()
+                      
+                      # If there's no figure content, skip
+                      if not fig.get_axes():
+                          return
+                      
+                      # Save plot to BytesIO buffer
+                      buf = io.BytesIO()
+                      fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', 
+                                facecolor='white', edgecolor='none')
+                      buf.seek(0)
+                      
+                      # Encode as base64
+                      img_data = base64.b64encode(buf.getvalue()).decode()
+                      
+                      # Display as HTML img tag
+                      print(f'<img src="data:image/png;base64,{img_data}" style="max-width: 100%; height: auto; margin: 10px 0;"/>')
+                      
+                      # Clear the figure to prevent memory leaks
+                      plt.clf()
+                      
+                  except Exception as e:
+                      print(f"Error displaying plot: {e}")
+                      # Fallback to original show if there's an error
+                      _original_show(*args, **kwargs)
+              
+              # Replace plt.show with our custom function
+              plt.show = capture_show
+              
+              # Also patch savefig to auto-display if needed
+              _original_savefig = plt.savefig
+              def auto_display_savefig(*args, **kwargs):
+                  _original_savefig(*args, **kwargs)
+                  # Auto-show after saving
+                  capture_show()
+              
+              # Uncomment next line if you want savefig to also auto-display
+              # plt.savefig = auto_display_savefig
+              
+            except ImportError:
+              pass
           `);
         } catch (configError) {
           console.warn(
