@@ -9,8 +9,8 @@ declare global {
 export function PythonIDE() {
   const [pyodide, setPyodide] = useState<any>(null);
   const [pyodideReady, setPyodideReady] = useState(false);
-  const [code, setCode] = useState("print('Hello from Pyodide!')");
-  const [output, setOutput] = useState("Loading Pyodide...");
+  const [code, setCode] = useState("print('Hello from Python!')");
+  const [output, setOutput] = useState("Loading Python...");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -21,14 +21,14 @@ export function PythonIDE() {
         setPyodideReady(true);
         setOutput("Pyodide loaded. Ready to run Python.");
       } catch (error) {
-        setOutput("Error loading Pyodide: " + error);
+        setOutput("Error loading Python: " + error);
       }
     };
 
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js";
     script.onload = () => loadPy();
-    script.onerror = () => setOutput("Failed to load Pyodide script");
+    script.onerror = () => setOutput("Failed to load Python script");
     document.head.appendChild(script);
 
     return () => {

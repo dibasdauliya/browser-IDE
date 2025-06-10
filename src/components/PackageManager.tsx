@@ -40,6 +40,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
     "numpy",
     "pandas",
     "matplotlib",
+    "dibas",
     "scipy",
     "beautifulsoup4",
     "pillow",

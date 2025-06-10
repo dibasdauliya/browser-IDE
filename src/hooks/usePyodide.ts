@@ -10,7 +10,7 @@ declare global {
 export const usePyodide = () => {
   const [pyodide, setPyodide] = useState<PyodideInstance | null>(null);
   const [pyodideReady, setPyodideReady] = useState(false);
-  const [output, setOutput] = useState("Loading Pyodide...");
+  const [output, setOutput] = useState("Loading Python...");
   const [isRunning, setIsRunning] = useState(false);
   const [installedPackages, setInstalledPackages] = useState<Set<string>>(
     new Set()
@@ -22,7 +22,7 @@ export const usePyodide = () => {
         const pyodideInstance = await window.loadPyodide();
 
         // Install commonly used packages
-        setOutput("Loading Pyodide and installing common packages...");
+        setOutput("Loading Python and installing common packages...");
 
         // Install micropip first (it's usually already available)
         await pyodideInstance.loadPackage("micropip");
@@ -46,7 +46,6 @@ export const usePyodide = () => {
               import js
               result = js.prompt(str(prompt_text))
               if result is None:
-                  # User clicked Cancel - raise KeyboardInterrupt like normal input()
                   raise KeyboardInterrupt("Input cancelled by user")
               return str(result)
           
@@ -55,13 +54,7 @@ export const usePyodide = () => {
         `);
 
         // Common packages to pre-install
-        const commonPackages = [
-          "requests",
-          "numpy",
-          "pandas",
-          "matplotlib",
-          "beautifulsoup4",
-        ];
+        const commonPackages = ["requests", "numpy", "matplotlib"];
         const installedSet = new Set<string>();
 
         for (const pkg of commonPackages) {
@@ -131,12 +124,11 @@ export const usePyodide = () => {
         setPyodide(pyodideInstance);
         setPyodideReady(true);
         setOutput(
-          "Pyodide loaded successfully! Ready to run Python code.\nPre-installed packages: " +
-            Array.from(installedSet).join(", ") +
-            "\n🔒 SSL warnings have been suppressed for better user experience."
+          "Ready to run Python code. \nPre-installed packages: " +
+            Array.from(installedSet).join(", ")
         );
       } catch (error) {
-        setOutput("Error loading Pyodide: " + error);
+        setOutput("Error loading Python: " + error);
       }
     };
 
@@ -278,9 +270,9 @@ export const usePyodide = () => {
 
       // Update output after execution completes
       if (finalOutput === "") {
-        setOutput("✅ Code executed successfully (no output)");
+        setOutput("=== Output ===\n(empty)");
       } else {
-        setOutput(`✅ Code executed successfully:\n${finalOutput}`);
+        setOutput(`=== Output ===\n${finalOutput}`);
       }
     } catch (err) {
       const errorString = String(err);
@@ -339,9 +331,7 @@ export const usePyodide = () => {
   };
 
   const clearOutput = () => {
-    setOutput(
-      pyodideReady ? "Ready to run Python code." : "Loading Pyodide..."
-    );
+    setOutput(pyodideReady ? "Ready to run Python code." : "Loading Python...");
   };
 
   return {
