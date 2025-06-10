@@ -22,6 +22,9 @@ export const PythonIDE = () => {
     updateFileContent,
     getActiveFile,
     getOpenFiles,
+    uploadFiles,
+    downloadFile,
+    downloadAllFiles,
   } = useFileSystem();
 
   const activeFile = getActiveFile();
@@ -55,6 +58,9 @@ export const PythonIDE = () => {
                   onFileCreate={createFile}
                   onFileDelete={deleteFile}
                   onFileRename={renameFile}
+                  onFileUpload={uploadFiles}
+                  onFileDownload={downloadFile}
+                  onDownloadAll={downloadAllFiles}
                 />
               }
               rightPanel={

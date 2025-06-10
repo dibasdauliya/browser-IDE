@@ -168,6 +168,68 @@ export const useFileSystem = () => {
       .filter(Boolean) as FileItem[];
   }, [fileSystem.files, fileSystem.openFiles]);
 
+  const uploadFiles = useCallback((files: File[]) => {
+    const newFiles: FileItem[] = [];
+
+    files.forEach((file) => {
+      const id = generateId();
+      const extension = getFileExtension(file.name);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+
+        const newFile: FileItem = {
+          id,
+          name: file.name,
+          content,
+          type: "file",
+          extension,
+          lastModified: Date.now(),
+        };
+
+        setFileSystem((prev) => ({
+          ...prev,
+          files: [...prev.files, newFile],
+          activeFileId: id,
+          openFiles: [...prev.openFiles, id],
+        }));
+      };
+      reader.readAsText(file);
+    });
+  }, []);
+
+  const downloadFile = useCallback(
+    (fileId: string) => {
+      const file = fileSystem.files.find((f) => f.id === fileId);
+      if (!file) return;
+
+      const blob = new Blob([file.content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    [fileSystem.files]
+  );
+
+  const downloadAllFiles = useCallback(() => {
+    if (fileSystem.files.length === 0) return;
+
+    // Create a zip-like structure by downloading individual files
+    // For a more advanced implementation, you could use JSZip library
+    fileSystem.files.forEach((file) => {
+      setTimeout(
+        () => downloadFile(file.id),
+        100 * fileSystem.files.indexOf(file)
+      );
+    });
+  }, [fileSystem.files, downloadFile]);
+
   return {
     files: fileSystem.files,
     activeFileId: fileSystem.activeFileId,
@@ -180,5 +242,8 @@ export const useFileSystem = () => {
     updateFileContent,
     getActiveFile,
     getOpenFiles,
+    uploadFiles,
+    downloadFile,
+    downloadAllFiles,
   };
 };

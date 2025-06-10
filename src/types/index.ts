@@ -56,6 +56,9 @@ export interface FileExplorerProps {
   onFileCreate: (name: string) => void;
   onFileDelete: (fileId: string) => void;
   onFileRename: (fileId: string, newName: string) => void;
+  onFileUpload: (files: File[]) => void;
+  onFileDownload: (fileId: string) => void;
+  onDownloadAll: () => void;
 }
 
 export interface FileTabsProps {
