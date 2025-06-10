@@ -29,13 +29,29 @@ export const usePyodide = () => {
 
         // Configure basic Python environment
         await pyodideInstance.runPythonAsync(`
-import warnings
-import sys
-from io import StringIO
-
-# Disable common warnings that clutter user output
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
+          import warnings
+          import sys
+          import builtins
+          from io import StringIO
+          
+          # Disable common warnings that clutter user output
+          warnings.filterwarnings("ignore", category=DeprecationWarning)
+          warnings.filterwarnings("ignore", category=FutureWarning)
+          
+          # Patch input() function to work in browser environment
+          def browser_input(prompt_text=""):
+              """
+              Browser-compatible input function using JavaScript prompt.
+              """
+              import js
+              result = js.prompt(str(prompt_text))
+              if result is None:
+                  # User clicked Cancel - raise KeyboardInterrupt like normal input()
+                  raise KeyboardInterrupt("Input cancelled by user")
+              return str(result)
+          
+          # Replace built-in input with our browser version
+          builtins.input = browser_input
         `);
 
         // Common packages to pre-install

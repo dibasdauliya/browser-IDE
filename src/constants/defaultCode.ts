@@ -34,7 +34,18 @@ dictionary = {
 for key, value in dictionary.items():
     print(f"{key}: {value}")
 
-# Example 3: Network requests (SSL warnings suppressed)
+# Example 3: User input (works with browser prompts)
+def interactive_example():
+    """
+    Example showing how input() works in the browser environment.
+    Uncomment the lines below to try it!
+    """
+    # name = input("What's your name? ")
+    # age = input("What's your age? ")
+    # print(f"Hello {name}! You are {age} years old.")
+    print("Interactive example ready - uncomment the lines above to try input()!")
+
+# Example 4: Network requests (SSL warnings suppressed)
 def fetch_api_data():
     """
     Example of making HTTP requests with proper error handling.
@@ -61,10 +72,14 @@ print(f"10 + 20 = {result}")
 print(f"Fibonacci(10) = {fib_10}")
 print(f"π = {math.pi:.4f}")
 
+print(f"\\n🎯 Interactive input example:")
+interactive_example()
+
 print(f"\\n🌐 Network request example:")
 print(fetch_api_data())
 
 print(f"\\n💡 Tips:")
+print("- input() works with browser prompts (prompt dialogs)")
 print("- SSL warnings are automatically suppressed")
 print("- Common packages (requests, numpy, pandas) are pre-installed")
 print("- Missing packages are auto-installed when imported")
