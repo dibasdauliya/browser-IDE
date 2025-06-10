@@ -8,3 +8,5 @@ export { Navigation } from "./Navigation";
 export { FileExplorer } from "./FileExplorer";
 export { FileTabs } from "./FileTabs";
 export { FileEditorPanel } from "./FileEditorPanel";
+export { PackageManager } from "./PackageManager";
+export { RightPanel } from "./RightPanel";

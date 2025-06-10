@@ -2,6 +2,7 @@ export interface PyodideInstance {
   runPythonAsync: (code: string) => Promise<void>;
   setStdout: (handler: { batched: (s: string) => void }) => void;
   setStderr: (handler: { batched: (s: string) => void }) => void;
+  loadPackage: (packageName: string) => Promise<void>;
 }
 
 export interface PyodideState {

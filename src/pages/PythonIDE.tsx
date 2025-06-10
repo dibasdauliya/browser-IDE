@@ -1,16 +1,23 @@
 import {
   Header,
   ResizablePanels,
-  OutputPanel,
   Navigation,
   FileExplorer,
   FileEditorPanel,
+  RightPanel,
 } from "../components";
 import { usePyodide, useFileSystem } from "../hooks";
 
 export const PythonIDE = () => {
-  const { pyodideReady, isRunning, output, runCode, clearOutput } =
-    usePyodide();
+  const {
+    pyodideReady,
+    isRunning,
+    output,
+    runCode,
+    clearOutput,
+    installPackage,
+    installedPackages,
+  } = usePyodide();
   const {
     files,
     activeFileId,
@@ -78,7 +85,15 @@ export const PythonIDE = () => {
               }
             />
           }
-          rightPanel={<OutputPanel output={output} onClear={clearOutput} />}
+          rightPanel={
+            <RightPanel
+              output={output}
+              onClear={clearOutput}
+              installedPackages={installedPackages}
+              onInstallPackage={installPackage}
+              pyodideReady={pyodideReady}
+            />
+          }
         />
       </div>
     </div>

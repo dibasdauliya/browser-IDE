@@ -12,14 +12,52 @@ export const usePyodide = () => {
   const [pyodideReady, setPyodideReady] = useState(false);
   const [output, setOutput] = useState("Loading Pyodide...");
   const [isRunning, setIsRunning] = useState(false);
+  const [installedPackages, setInstalledPackages] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const loadPy = async () => {
       try {
         const pyodideInstance = await window.loadPyodide();
+
+        // Install commonly used packages
+        setOutput("Loading Pyodide and installing common packages...");
+
+        // Install micropip first (it's usually already available)
+        await pyodideInstance.loadPackage("micropip");
+
+        // Common packages to pre-install
+        const commonPackages = [
+          "requests",
+          "numpy",
+          "pandas",
+          "matplotlib",
+          "beautifulsoup4",
+        ];
+        const installedSet = new Set<string>();
+
+        for (const pkg of commonPackages) {
+          try {
+            await pyodideInstance.runPythonAsync(`
+              import micropip
+              await micropip.install("${pkg}")
+            `);
+            installedSet.add(pkg);
+            setOutput((prev) => prev + `\n✓ Installed ${pkg}`);
+          } catch (error) {
+            console.warn(`Failed to install ${pkg}:`, error);
+            setOutput((prev) => prev + `\n⚠ Failed to install ${pkg}`);
+          }
+        }
+
+        setInstalledPackages(installedSet);
         setPyodide(pyodideInstance);
         setPyodideReady(true);
-        setOutput("Pyodide loaded successfully! Ready to run Python code.");
+        setOutput(
+          "Pyodide loaded successfully! Ready to run Python code.\nPre-installed packages: " +
+            Array.from(installedSet).join(", ")
+        );
       } catch (error) {
         setOutput("Error loading Pyodide: " + error);
       }
@@ -38,6 +76,28 @@ export const usePyodide = () => {
       }
     };
   }, []);
+
+  const installPackage = async (packageName: string): Promise<boolean> => {
+    if (!pyodide || !pyodideReady) return false;
+
+    try {
+      setOutput((prev) => prev + `\n📦 Installing ${packageName}...`);
+
+      await pyodide.runPythonAsync(`
+        import micropip
+        await micropip.install("${packageName}")
+      `);
+
+      setInstalledPackages((prev) => new Set([...prev, packageName]));
+      setOutput((prev) => prev + `\n✓ Successfully installed ${packageName}`);
+      return true;
+    } catch (error) {
+      setOutput(
+        (prev) => prev + `\n❌ Failed to install ${packageName}: ${error}`
+      );
+      return false;
+    }
+  };
 
   const runCode = async (code: string) => {
     if (!pyodideReady || !pyodide || isRunning) return;
@@ -72,7 +132,40 @@ export const usePyodide = () => {
         setOutput(`Code executed successfully:\n${outputBuffer}`);
       }
     } catch (err) {
-      setOutput(`Python Error:\n${err}`);
+      const errorString = String(err);
+
+      // Check if it's a missing module error and try to auto-install
+      const moduleNotFoundMatch = errorString.match(
+        /ModuleNotFoundError.*?'([^']+)'/
+      );
+      if (moduleNotFoundMatch) {
+        const missingModule = moduleNotFoundMatch[1];
+        setOutput(
+          `❌ Module '${missingModule}' not found. Attempting to install automatically...\n`
+        );
+
+        const installed = await installPackage(missingModule);
+        if (installed) {
+          setOutput((prev) => prev + `\n🔄 Retrying code execution...\n`);
+          // Retry the code execution
+          try {
+            await pyodide.runPythonAsync(code);
+            setOutput(
+              (prev) =>
+                prev +
+                `\n✅ Code executed successfully after installing ${missingModule}`
+            );
+          } catch (retryErr) {
+            setOutput(
+              (prev) =>
+                prev +
+                `\n❌ Code still failed after installing ${missingModule}:\n${retryErr}`
+            );
+          }
+        }
+      } else {
+        setOutput(`Python Error:\n${err}`);
+      }
     } finally {
       setIsRunning(false);
     }
@@ -91,5 +184,7 @@ export const usePyodide = () => {
     output,
     runCode,
     clearOutput,
+    installPackage,
+    installedPackages: Array.from(installedPackages),
   };
 };
