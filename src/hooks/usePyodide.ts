@@ -27,6 +27,17 @@ export const usePyodide = () => {
         // Install micropip first (it's usually already available)
         await pyodideInstance.loadPackage("micropip");
 
+        // Configure basic Python environment
+        await pyodideInstance.runPythonAsync(`
+import warnings
+import sys
+from io import StringIO
+
+# Disable common warnings that clutter user output
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+        `);
+
         // Common packages to pre-install
         const commonPackages = [
           "requests",
@@ -51,12 +62,62 @@ export const usePyodide = () => {
           }
         }
 
+        // Configure urllib3 and requests after installation
+        try {
+          await pyodideInstance.runPythonAsync(`
+            # Configure urllib3 and requests to suppress SSL warnings
+            try:
+              import urllib3
+              urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+              
+              # Additional urllib3 warning filters
+              import warnings
+              warnings.filterwarnings("ignore", category=UserWarning, module="urllib3")
+            except ImportError:
+              pass
+              
+            # Configure requests with better error handling
+            try:
+              import requests
+              from requests.packages.urllib3.exceptions import InsecureRequestWarning
+              requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+              
+              # Monkey patch requests to provide better error messages
+              _original_request = requests.request
+              def patched_request(*args, **kwargs):
+                  try:
+                      # Set a default timeout if none provided
+                      if 'timeout' not in kwargs:
+                          kwargs['timeout'] = 30
+                      return _original_request(*args, **kwargs)
+                  except Exception as e:
+                      error_msg = str(e)
+                      if "Connection aborted" in error_msg or "HTTPException" in error_msg:
+                          raise Exception("Network Error: Unable to connect to the server. This could be due to network issues or server problems.")
+                      elif "timeout" in error_msg.lower():
+                          raise Exception("Timeout Error: The request took too long to complete. The server might be slow or unreachable.")
+                      elif "SSL" in error_msg or "certificate" in error_msg:
+                          raise Exception("SSL Error: There was a problem with the secure connection.")
+                      else:
+                          raise e
+              requests.request = patched_request
+            except ImportError:
+              pass
+          `);
+        } catch (configError) {
+          console.warn(
+            "Warning: Could not configure SSL warning suppression:",
+            configError
+          );
+        }
+
         setInstalledPackages(installedSet);
         setPyodide(pyodideInstance);
         setPyodideReady(true);
         setOutput(
           "Pyodide loaded successfully! Ready to run Python code.\nPre-installed packages: " +
-            Array.from(installedSet).join(", ")
+            Array.from(installedSet).join(", ") +
+            "\n🔒 SSL warnings have been suppressed for better user experience."
         );
       } catch (error) {
         setOutput("Error loading Pyodide: " + error);
@@ -83,20 +144,71 @@ export const usePyodide = () => {
     try {
       setOutput((prev) => prev + `\n📦 Installing ${packageName}...`);
 
+      // Install package with warning suppression
       await pyodide.runPythonAsync(`
-        import micropip
-        await micropip.install("${packageName}")
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import micropip
+            await micropip.install("${packageName}")
       `);
 
       setInstalledPackages((prev) => new Set([...prev, packageName]));
-      setOutput((prev) => prev + `\n✓ Successfully installed ${packageName}`);
+      setOutput((prev) => prev + `\n✅ Successfully installed ${packageName}`);
       return true;
     } catch (error) {
+      const cleanError = String(error).includes("No such package")
+        ? `Package '${packageName}' not found in PyPI`
+        : `Installation failed: ${error}`;
       setOutput(
-        (prev) => prev + `\n❌ Failed to install ${packageName}: ${error}`
+        (prev) => prev + `\n❌ Failed to install ${packageName}: ${cleanError}`
       );
       return false;
     }
+  };
+
+  const formatError = (error: string): string => {
+    // Clean up common error patterns for better user experience
+    let cleanError = error;
+
+    // Handle network/connection errors more clearly
+    if (
+      cleanError.includes("Connection aborted") ||
+      cleanError.includes("HTTPException")
+    ) {
+      if (cleanError.includes("A network error occurred")) {
+        return "❌ Network Error: Unable to connect to the server. Please check your internet connection or try again later.";
+      }
+      return "❌ Connection Error: The request was interrupted. This could be due to network issues or server problems.";
+    }
+
+    // Handle SSL/certificate errors
+    if (cleanError.includes("SSL") || cleanError.includes("certificate")) {
+      return "❌ SSL Error: There was a problem with the secure connection. This is often due to server configuration issues.";
+    }
+
+    // Handle timeout errors
+    if (cleanError.includes("timeout") || cleanError.includes("TimeoutError")) {
+      return "❌ Timeout Error: The request took too long to complete. The server might be slow or unreachable.";
+    }
+
+    // Handle requests library specific errors
+    if (cleanError.includes("requests.exceptions")) {
+      if (cleanError.includes("ConnectionError")) {
+        return "❌ Connection Error: Unable to establish a connection to the server.";
+      }
+      if (cleanError.includes("RequestException")) {
+        return "❌ Request Error: The HTTP request failed. Please check the URL and try again.";
+      }
+    }
+
+    // Remove file paths from tracebacks for cleaner output
+    cleanError = cleanError.replace(
+      /File "\/lib\/python[\d.]+\/site-packages\/[^"]*", line \d+, in [^\n]*\n/g,
+      ""
+    );
+
+    return cleanError;
   };
 
   const runCode = async (code: string) => {
@@ -107,29 +219,52 @@ export const usePyodide = () => {
 
     try {
       let outputBuffer = "";
+      let errorBuffer = "";
 
-      // Capture stdout with proper newline handling
+      // Capture stdout with proper newline handling and filter warnings
       pyodide.setStdout({
         batched: (s: string) => {
-          outputBuffer += s + "\n";
+          // Filter out urllib3 and other technical warnings
+          if (
+            !s.includes("InsecureRequestWarning") &&
+            !s.includes("urllib3/connectionpool.py") &&
+            !s.includes("warnings.warn") &&
+            !s.includes("certificate verification")
+          ) {
+            outputBuffer += s + "\n";
+          }
         },
       });
 
-      // Capture stderr with proper newline handling
+      // Capture stderr with filtering
       pyodide.setStderr({
         batched: (s: string) => {
-          outputBuffer += s + "\n";
+          // Filter out warning messages but keep actual errors
+          if (
+            !s.includes("InsecureRequestWarning") &&
+            !s.includes("urllib3/connectionpool.py") &&
+            !s.includes("warnings.warn") &&
+            !s.includes("certificate verification")
+          ) {
+            errorBuffer += s + "\n";
+          }
         },
       });
 
-      // Clear previous output and run code
+      // Execute the code directly without extra wrapper
       await pyodide.runPythonAsync(code);
 
+      // Combine output and filtered errors
+      let finalOutput = outputBuffer.trim();
+      if (errorBuffer.trim()) {
+        finalOutput += (finalOutput ? "\n" : "") + errorBuffer.trim();
+      }
+
       // Update output after execution completes
-      if (outputBuffer.trim() === "") {
-        setOutput("Code executed successfully (no output)");
+      if (finalOutput === "") {
+        setOutput("✅ Code executed successfully (no output)");
       } else {
-        setOutput(`Code executed successfully:\n${outputBuffer}`);
+        setOutput(`✅ Code executed successfully:\n${finalOutput}`);
       }
     } catch (err) {
       const errorString = String(err);
@@ -141,7 +276,7 @@ export const usePyodide = () => {
       if (moduleNotFoundMatch) {
         const missingModule = moduleNotFoundMatch[1];
         setOutput(
-          `❌ Module '${missingModule}' not found. Attempting to install automatically...\n`
+          `❌ Module '${missingModule}' not found. Installing automatically...\n`
         );
 
         const installed = await installPackage(missingModule);
@@ -149,22 +284,38 @@ export const usePyodide = () => {
           setOutput((prev) => prev + `\n🔄 Retrying code execution...\n`);
           // Retry the code execution
           try {
+            let retryOutputBuffer = "";
+            pyodide.setStdout({
+              batched: (s: string) => {
+                if (
+                  !s.includes("InsecureRequestWarning") &&
+                  !s.includes("urllib3/connectionpool.py")
+                ) {
+                  retryOutputBuffer += s + "\n";
+                }
+              },
+            });
+
             await pyodide.runPythonAsync(code);
+            const retryOutput = retryOutputBuffer.trim();
             setOutput(
               (prev) =>
                 prev +
-                `\n✅ Code executed successfully after installing ${missingModule}`
+                `\n✅ Code executed successfully after installing ${missingModule}` +
+                (retryOutput ? `:\n${retryOutput}` : "")
             );
           } catch (retryErr) {
+            const cleanRetryError = formatError(String(retryErr));
             setOutput(
               (prev) =>
                 prev +
-                `\n❌ Code still failed after installing ${missingModule}:\n${retryErr}`
+                `\n❌ Code failed after installing ${missingModule}:\n${cleanRetryError}`
             );
           }
         }
       } else {
-        setOutput(`Python Error:\n${err}`);
+        const cleanError = formatError(errorString);
+        setOutput(`❌ Error:\n${cleanError}`);
       }
     } finally {
       setIsRunning(false);
