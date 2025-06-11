@@ -11,4 +11,6 @@ export { FileEditorPanel } from "./FileEditorPanel";
 export { PackageManager } from "./PackageManager";
 export { RightPanel } from "./RightPanel";
 export { PreviewPanel } from "./PreviewPanel";
+export { Console } from "./Console";
+export { VerticalResizablePanels } from "./VerticalResizablePanels";
 export { DragProvider, useDragContext } from "./DragContext";
