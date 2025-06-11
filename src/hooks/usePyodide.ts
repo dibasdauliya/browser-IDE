@@ -145,10 +145,8 @@ export const usePyodide = () => {
                                 facecolor='white', edgecolor='none')
                       buf.seek(0)
                       
-                      # Encode as base64
                       img_data = base64.b64encode(buf.getvalue()).decode()
                       
-                      # Display as HTML img tag
                       print(f'<img src="data:image/png;base64,{img_data}" style="max-width: 100%; height: auto; margin: 10px 0;"/>')
                       
                       # Clear the figure to prevent memory leaks
@@ -156,7 +154,6 @@ export const usePyodide = () => {
                       
                   except Exception as e:
                       print(f"Error displaying plot: {e}")
-                      # Fallback to original show if there's an error
                       _original_show(*args, **kwargs)
               
               # Replace plt.show with our custom function
@@ -169,7 +166,6 @@ export const usePyodide = () => {
                   # Auto-show after saving
                   capture_show()
               
-              # Uncomment next line if you want savefig to also auto-display
               # plt.savefig = auto_display_savefig
               
             except ImportError:

@@ -13,6 +13,7 @@ interface FileEditorPanelProps {
   onClear: () => void;
   isRunning: boolean;
   pyodideReady: boolean;
+  hideControls?: boolean;
 }
 
 export const FileEditorPanel = ({
@@ -25,6 +26,7 @@ export const FileEditorPanel = ({
   onClear,
   isRunning,
   pyodideReady,
+  hideControls = false,
 }: FileEditorPanelProps) => {
   const handleCodeChange = (content: string) => {
     if (activeFile) {
@@ -33,7 +35,7 @@ export const FileEditorPanel = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col min-w-0">
       {/* File Tabs */}
       <FileTabs
         openFiles={openFiles}
@@ -58,20 +60,22 @@ export const FileEditorPanel = ({
         )}
       </div>
 
-      {/* Control Buttons */}
-      <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-400">
-            {activeFile ? `Editing: ${activeFile.name}` : "No file selected"}
+      {/* Control Buttons - Only show if not hidden */}
+      {!hideControls && (
+        <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-400">
+              {activeFile ? `Editing: ${activeFile.name}` : "No file selected"}
+            </div>
+            <ControlButtons
+              onRun={onRun}
+              onClear={onClear}
+              isRunning={isRunning}
+              pyodideReady={pyodideReady}
+            />
           </div>
-          <ControlButtons
-            onRun={onRun}
-            onClear={onClear}
-            isRunning={isRunning}
-            pyodideReady={pyodideReady}
-          />
         </div>
-      </div>
+      )}
     </div>
   );
 };

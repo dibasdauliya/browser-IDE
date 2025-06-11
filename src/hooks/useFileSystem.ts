@@ -1,17 +1,62 @@
 import { useState, useEffect, useCallback } from "react";
 import type { FileItem, FileSystemState } from "../types";
 import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
+import {
+  DEFAULT_HTML_CODE,
+  DEFAULT_CSS_CODE,
+  DEFAULT_JS_CODE,
+} from "../constants/defaultWebCode";
 
-const STORAGE_KEY = "browser-ide-files";
+const STORAGE_KEY_PREFIX = "browser-ide-files";
 
-const createDefaultFile = (): FileItem => ({
-  id: "main-py",
-  name: "main.py",
-  content: DEFAULT_PYTHON_CODE,
-  type: "file",
-  extension: "py",
-  lastModified: Date.now(),
-});
+const createDefaultFile = (storageKey?: string): FileItem => {
+  if (storageKey === "html-playground") {
+    return {
+      id: "index-html",
+      name: "index.html",
+      content: DEFAULT_HTML_CODE,
+      type: "file",
+      extension: "html",
+      lastModified: Date.now(),
+    };
+  }
+
+  return {
+    id: "main-py",
+    name: "main.py",
+    content: DEFAULT_PYTHON_CODE,
+    type: "file",
+    extension: "py",
+    lastModified: Date.now(),
+  };
+};
+
+const createDefaultWebFiles = (): FileItem[] => [
+  {
+    id: "index-html",
+    name: "index.html",
+    content: DEFAULT_HTML_CODE,
+    type: "file",
+    extension: "html",
+    lastModified: Date.now(),
+  },
+  {
+    id: "style-css",
+    name: "style.css",
+    content: DEFAULT_CSS_CODE,
+    type: "file",
+    extension: "css",
+    lastModified: Date.now(),
+  },
+  {
+    id: "script-js",
+    name: "script.js",
+    content: DEFAULT_JS_CODE,
+    type: "file",
+    extension: "js",
+    lastModified: Date.now(),
+  },
+];
 
 const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
@@ -22,28 +67,45 @@ const getFileExtension = (filename: string): string => {
   return lastDot > 0 ? filename.substring(lastDot + 1) : "";
 };
 
-export const useFileSystem = () => {
+export const useFileSystem = (storageKey?: string) => {
+  const STORAGE_KEY = storageKey
+    ? `${STORAGE_KEY_PREFIX}-${storageKey}`
+    : STORAGE_KEY_PREFIX;
+
   const [fileSystem, setFileSystem] = useState<FileSystemState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         return {
-          files: parsed.files || [createDefaultFile()],
-          activeFileId: parsed.activeFileId || "main-py",
-          openFiles: parsed.openFiles || ["main-py"],
+          files: parsed.files || [createDefaultFile(storageKey)],
+          activeFileId:
+            parsed.activeFileId ||
+            (storageKey === "html-playground" ? "index-html" : "main-py"),
+          openFiles:
+            parsed.openFiles ||
+            (storageKey === "html-playground" ? ["index-html"] : ["main-py"]),
         };
       }
     } catch (error) {
       console.error("Failed to load files from localStorage:", error);
     }
 
-    const defaultFile = createDefaultFile();
-    return {
-      files: [defaultFile],
-      activeFileId: defaultFile.id,
-      openFiles: [defaultFile.id],
-    };
+    if (storageKey === "html-playground") {
+      const defaultFiles = createDefaultWebFiles();
+      return {
+        files: defaultFiles,
+        activeFileId: "index-html",
+        openFiles: ["index-html"],
+      };
+    } else {
+      const defaultFile = createDefaultFile(storageKey);
+      return {
+        files: [defaultFile],
+        activeFileId: defaultFile.id,
+        openFiles: [defaultFile.id],
+      };
+    }
   });
 
   // Save to localStorage whenever fileSystem changes
@@ -53,7 +115,7 @@ export const useFileSystem = () => {
     } catch (error) {
       console.error("Failed to save files to localStorage:", error);
     }
-  }, [fileSystem]);
+  }, [fileSystem, STORAGE_KEY]);
 
   const createFile = useCallback((name: string) => {
     const id = generateId();

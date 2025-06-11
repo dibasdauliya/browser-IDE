@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Code, Terminal, ArrowRight, Github } from "lucide-react";
+import { Code, Terminal, ArrowRight, Github, Globe } from "lucide-react";
 
 export const Home = () => {
   return (
@@ -20,43 +20,152 @@ export const Home = () => {
           </p>
         </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <Link
-            to="/python"
-            className="group bg-gray-700 border border-gray-600 rounded-xl p-8 hover:border-blue-500 hover:bg-gray-650 transition-all duration-300 transform hover:scale-105"
-          >
-            <div className="flex items-center mb-4">
-              <div className="bg-green-600 p-3 rounded-lg mr-4">
-                <Terminal className="w-6 h-6" />
+        <main className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            {/* Python IDE Card */}
+            <Link
+              to="/python"
+              className="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-blue-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+            >
+              <div className="flex items-center mb-6">
+                <div className="bg-green-600 p-3 rounded-xl mr-4 group-hover:bg-green-500 transition-colors">
+                  <Terminal className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Python IDE
+                  </h2>
+                  <p className="text-gray-400">
+                    Full-featured Python environment
+                  </p>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold">Python IDE</h3>
-            </div>
-            <p className="text-gray-300 mb-6">
-              Full-featured Python environment. Run Python code with scientific
-              libraries support.
-            </p>
-            <div className="flex items-center text-blue-400 group-hover:text-blue-300">
-              <span className="mr-2">Launch Python IDE</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-            </div>
-            <div className="mt-4 text-sm text-gray-400">
-              ✓ Numpy, Pandas, Matplotlib support
-              <br />
-              ✓ Real-time code execution
-              <br />✓ Syntax highlighting & auto-completion
-            </div>
-          </Link>
-        </div>
 
-        <footer className="text-center text-gray-400">
-          <div className="flex items-center justify-center mb-4">
-            <Github className="w-5 h-5 mr-2" />
-            <span>Open Source Browser IDE</span>
+              <ul className="space-y-3 mb-6 text-gray-300">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  Complete Python runtime with Pyodide
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  Auto-install packages
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  Inline matplotlib plots
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  File upload/download support
+                </li>
+              </ul>
+
+              <div className="flex items-center text-blue-400 group-hover:text-blue-300 transition-colors">
+                <span className="font-medium">Start coding in Python</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Web Playground Card */}
+            <Link
+              to="/web"
+              className="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+            >
+              <div className="flex items-center mb-6">
+                <div className="bg-purple-600 p-3 rounded-xl mr-4 group-hover:bg-purple-500 transition-colors">
+                  <Globe className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Web Playground
+                  </h2>
+                  <p className="text-gray-400">
+                    HTML, CSS & JavaScript environment
+                  </p>
+                </div>
+              </div>
+
+              <ul className="space-y-3 mb-6 text-gray-300">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  Live HTML/CSS/JS preview
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  Real-time code updates
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  Responsive design testing
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  Multi-file project support
+                </li>
+              </ul>
+
+              <div className="flex items-center text-purple-400 group-hover:text-purple-300 transition-colors">
+                <span className="font-medium">Build web projects</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
           </div>
-          <p className="text-sm">
-            Built with React, TypeScript, and modern web technologies.
-          </p>
-        </footer>
+
+          {/* Features Section */}
+          <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 mb-16">
+            <h3 className="text-2xl font-bold text-center mb-8">
+              Why Browser IDE?
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="bg-blue-600 p-3 rounded-xl w-fit mx-auto mb-4">
+                  <Code className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Zero Setup</h4>
+                <p className="text-gray-400">
+                  No downloads or installations. Start coding immediately in
+                  your browser.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="bg-green-600 p-3 rounded-xl w-fit mx-auto mb-4">
+                  <Terminal className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Full-Featured</h4>
+                <p className="text-gray-400">
+                  Complete development environment with syntax highlighting and
+                  package management.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="bg-purple-600 p-3 rounded-xl w-fit mx-auto mb-4">
+                  <Globe className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Cross-Platform</h4>
+                <p className="text-gray-400">
+                  Works on any device with a modern browser. Code anywhere,
+                  anytime.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer className="text-center">
+            <div className="flex items-center justify-center space-x-6 mb-6">
+              <a
+                href="#"
+                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <Github className="w-5 h-5" />
+                <span>GitHub</span>
+              </a>
+            </div>
+            <p className="text-gray-500">
+              Built with React, TypeScript, and modern web technologies.
+            </p>
+          </footer>
+        </main>
       </div>
     </div>
   );

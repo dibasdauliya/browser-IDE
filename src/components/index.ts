@@ -10,3 +10,5 @@ export { FileTabs } from "./FileTabs";
 export { FileEditorPanel } from "./FileEditorPanel";
 export { PackageManager } from "./PackageManager";
 export { RightPanel } from "./RightPanel";
+export { PreviewPanel } from "./PreviewPanel";
+export { DragProvider, useDragContext } from "./DragContext";

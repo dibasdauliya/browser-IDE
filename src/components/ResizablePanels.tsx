@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
+import { DragProvider } from "./DragContext";
 
 interface ResizablePanelsProps {
   leftPanel: ReactNode;
@@ -22,11 +23,13 @@ export const ResizablePanels = ({
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
   }, []);
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
+      e.preventDefault();
       if (!isDragging || !containerRef.current) return;
 
       const container = containerRef.current;
@@ -71,33 +74,41 @@ export const ResizablePanels = ({
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
-    <div ref={containerRef} className="flex h-full w-full">
-      {/* Left Panel */}
-      <div
-        style={{ width: `${leftWidth}%` }}
-        className="h-full overflow-hidden"
-      >
-        {leftPanel}
-      </div>
+    <DragProvider isDragging={isDragging}>
+      <div ref={containerRef} className="flex h-full w-full">
+        {/* Left Panel */}
+        <div
+          style={{ width: `${leftWidth}%` }}
+          className="h-full overflow-hidden"
+        >
+          {leftPanel}
+        </div>
 
-      {/* Resizer */}
-      <div
-        className={`relative w-1 bg-gray-700 hover:bg-blue-500 cursor-col-resize transition-colors ${
-          isDragging ? "bg-blue-500" : ""
-        }`}
-        onMouseDown={handleMouseDown}
-      >
-        {/* Visual indicator */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 bg-gray-500 rounded-full opacity-0 hover:opacity-100 transition-opacity" />
-      </div>
+        {/* Resizer */}
+        <div
+          className={`relative w-1 bg-gray-700 hover:bg-blue-500 cursor-col-resize transition-colors select-none ${
+            isDragging ? "bg-blue-500" : ""
+          }`}
+          onMouseDown={handleMouseDown}
+          style={{ touchAction: "none" }}
+        >
+          {/* Invisible wider hit area for easier clicking */}
+          <div
+            className="absolute inset-y-0 -left-1 -right-1 cursor-col-resize"
+            onMouseDown={handleMouseDown}
+          />
+          {/* Visual indicator */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 bg-gray-500 rounded-full opacity-0 hover:opacity-100 transition-opacity pointer-events-none" />
+        </div>
 
-      {/* Right Panel */}
-      <div
-        style={{ width: `${100 - leftWidth}%` }}
-        className="h-full overflow-hidden"
-      >
-        {rightPanel}
+        {/* Right Panel */}
+        <div
+          style={{ width: `${100 - leftWidth}%` }}
+          className="h-full overflow-hidden"
+        >
+          {rightPanel}
+        </div>
       </div>
-    </div>
+    </DragProvider>
   );
 };
