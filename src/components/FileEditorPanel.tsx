@@ -36,7 +36,6 @@ export const FileEditorPanel = ({
 
   return (
     <div className="h-full flex flex-col min-w-0">
-      {/* File Tabs */}
       <FileTabs
         openFiles={openFiles}
         activeFileId={activeFile?.id || null}
@@ -44,10 +43,13 @@ export const FileEditorPanel = ({
         onTabClose={onFileTabClose}
       />
 
-      {/* Code Editor */}
       <div className="flex-1 min-h-0">
         {activeFile ? (
-          <CodeEditor code={activeFile.content} onChange={handleCodeChange} />
+          <CodeEditor
+            code={activeFile.content}
+            onChange={handleCodeChange}
+            language={activeFile.extension}
+          />
         ) : (
           <div className="h-full flex items-center justify-center bg-gray-900 text-gray-500">
             <div className="text-center">
@@ -60,7 +62,6 @@ export const FileEditorPanel = ({
         )}
       </div>
 
-      {/* Control Buttons - Only show if not hidden */}
       {!hideControls && (
         <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between">

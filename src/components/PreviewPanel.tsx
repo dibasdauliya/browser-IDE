@@ -175,7 +175,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     setIsConsoleVisible(!isConsoleVisible);
   };
 
-  // Create a stable preview section that contains the iframe
+  // stable preview section that contains the iframe
   const previewSection = (
     <>
       {/* Preview Content */}

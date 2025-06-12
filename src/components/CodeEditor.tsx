@@ -1,5 +1,10 @@
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
+import { html } from "@codemirror/lang-html";
+import { css } from "@codemirror/lang-css";
+import { javascript } from "@codemirror/lang-javascript";
+import { json } from "@codemirror/lang-json";
+import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
@@ -11,7 +16,31 @@ import {
 import { foldKeymap } from "@codemirror/language";
 import type { CodeEditorProps } from "../types";
 
-export const CodeEditor = ({ code, onChange }: CodeEditorProps) => {
+const getLanguageExtension = (language?: string) => {
+  switch (language?.toLowerCase()) {
+    case "html":
+      return html();
+    case "css":
+      return css();
+    case "js":
+    case "javascript":
+      return javascript();
+    case "json":
+      return json();
+    case "md":
+    case "markdown":
+      return markdown();
+    case "py":
+    case "python":
+      return python();
+    default:
+      return python(); // Default to Python for backward compatibility
+  }
+};
+
+export const CodeEditor = ({ code, onChange, language }: CodeEditorProps) => {
+  const languageExtension = getLanguageExtension(language);
+
   return (
     <div className="h-full flex flex-col">
       {/* <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
@@ -38,7 +67,7 @@ export const CodeEditor = ({ code, onChange }: CodeEditorProps) => {
               highlightSelectionMatches: true,
             }}
             extensions={[
-              python(),
+              languageExtension,
               history(),
               keymap.of([
                 ...defaultKeymap,

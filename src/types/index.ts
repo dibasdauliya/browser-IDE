@@ -31,6 +31,7 @@ export interface FileSystemState {
 export interface CodeEditorProps {
   code: string;
   onChange: (code: string) => void;
+  language?: string;
 }
 
 export interface OutputPanelProps {
