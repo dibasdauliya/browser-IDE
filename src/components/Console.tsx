@@ -11,9 +11,14 @@ export interface ConsoleMessage {
 interface ConsoleProps {
   messages: ConsoleMessage[];
   onClear: () => void;
+  customHeader?: React.ReactNode;
 }
 
-export const Console: React.FC<ConsoleProps> = ({ messages, onClear }) => {
+export const Console: React.FC<ConsoleProps> = ({
+  messages,
+  onClear,
+  customHeader,
+}) => {
   const getMessageStyle = (type: ConsoleMessage["type"]) => {
     switch (type) {
       case "error":
@@ -33,25 +38,26 @@ export const Console: React.FC<ConsoleProps> = ({ messages, onClear }) => {
 
   return (
     <div className="h-full flex flex-col bg-gray-900 min-w-0 min-h-0">
-      {/* Console Header */}
-      <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Terminal className="w-4 h-4 text-green-400" />
-            <span className="text-sm font-medium">Console</span>
-            <span className="text-xs text-gray-500">
-              ({messages.length} message{messages.length !== 1 ? "s" : ""})
-            </span>
+      {customHeader || (
+        <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Terminal className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium">Console</span>
+              <span className="text-xs text-gray-500">
+                ({messages.length} message{messages.length !== 1 ? "s" : ""})
+              </span>
+            </div>
+            <button
+              onClick={onClear}
+              className="p-1 hover:bg-gray-700 rounded transition-colors"
+              title="Clear console"
+            >
+              <Trash2 className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
-          <button
-            onClick={onClear}
-            className="p-1 hover:bg-gray-700 rounded transition-colors"
-            title="Clear console"
-          >
-            <Trash2 className="w-4 h-4 text-gray-400" />
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Console Content */}
       <div className="flex-1 overflow-auto font-mono text-sm min-h-0">

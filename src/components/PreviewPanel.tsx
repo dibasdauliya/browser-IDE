@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Eye, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Eye,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  Terminal,
+  X,
+  Trash2,
+} from "lucide-react";
 import { useDragContext } from "./DragContext";
 import { Console } from "./Console";
 import type { ConsoleMessage } from "./Console";
@@ -207,22 +215,42 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         </div>
         <div className="flex items-center space-x-1">
           <button
-            onClick={toggleConsole}
-            className="p-1 hover:bg-gray-700 rounded transition-colors"
-            title={isConsoleVisible ? "Hide console" : "Show console"}
-          >
-            {isConsoleVisible ? (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            ) : (
-              <ChevronUp className="w-4 h-4 text-gray-400" />
-            )}
-          </button>
-          <button
             onClick={handleRefresh}
             className="p-1 hover:bg-gray-700 rounded transition-colors"
             title="Refresh preview"
           >
             <RefreshCw className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const consoleHeader = (
+    <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex-shrink-0">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Terminal className="w-4 h-4 text-green-400" />
+          <span className="text-sm font-medium">Console</span>
+          <span className="text-xs text-gray-500">
+            ({consoleMessages.length} message
+            {consoleMessages.length !== 1 ? "s" : ""})
+          </span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={clearConsole}
+            className="p-1 hover:bg-gray-700 rounded transition-colors"
+            title="Clear console"
+          >
+            <Trash2 className="w-4 h-4 text-gray-400" />
+          </button>
+          <button
+            onClick={toggleConsole}
+            className="p-1 hover:bg-gray-700 rounded transition-colors"
+            title="Close console"
+          >
+            <X className="w-4 h-4 text-gray-400" />
           </button>
         </div>
       </div>
@@ -240,7 +268,11 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </div>
           }
           bottomPanel={
-            <Console messages={consoleMessages} onClear={clearConsole} />
+            <Console
+              messages={consoleMessages}
+              onClear={clearConsole}
+              customHeader={consoleHeader}
+            />
           }
           initialTopHeight={70}
           minTopHeight={30}
@@ -251,6 +283,16 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
           {headerContent}
           {previewSection}
         </div>
+      )}
+
+      {!isConsoleVisible && (
+        <button
+          onClick={toggleConsole}
+          className="fixed bottom-4 right-4 p-3 rounded-full bg-gray-800 hover:bg-gray-700 transition-all duration-200 shadow-lg"
+          title="Show console"
+        >
+          <Terminal className="w-5 h-5 text-gray-300" />
+        </button>
       )}
     </div>
   );

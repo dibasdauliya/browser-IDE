@@ -196,30 +196,23 @@ footer {
     animation: bounce 1s;
 }`;
 
-export const DEFAULT_JS_CODE = `// JavaScript for the Web Playground Demo
-console.log('🚀 Web Playground JavaScript loaded!');
+export const DEFAULT_JS_CODE = `console.log('Web Playground JavaScript loaded!');
 
-// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Get references to elements
     const demoButton = document.getElementById('demoButton');
     const output = document.getElementById('output');
     
-    // Counter for demo
     let clickCount = 0;
     
-    // Button click handler
     if (demoButton && output) {
         demoButton.addEventListener('click', function() {
             clickCount++;
             
-            // Add bounce animation to button
             demoButton.classList.add('bounce');
             setTimeout(() => {
                 demoButton.classList.remove('bounce');
             }, 1000);
             
-            // Update output with dynamic content
             output.innerHTML = \`
                 <h3>🎉 Button clicked!</h3>
                 <p><strong>Click count:</strong> \${clickCount}</p>
@@ -227,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p><strong>Random number:</strong> \${Math.floor(Math.random() * 100) + 1}</p>
             \`;
             
-            // Change button text based on clicks
             if (clickCount === 1) {
                 demoButton.textContent = 'Click me again!';
             } else if (clickCount === 5) {
@@ -240,18 +232,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add some interactive features
     const cards = document.querySelectorAll('.card');
     cards.forEach((card, index) => {
-        // Add hover effect data
         card.addEventListener('mouseenter', function() {
             console.log(\`Hovering over card \${index + 1}\`);
         });
     });
     
-    // Welcome message
-    console.log(\`
-    🌟 Welcome to the Web Playground! 
+    console.log(\`Welcome to the Web Playground! 
     
     This playground includes:
     - HTML structure in index.html
@@ -262,31 +250,26 @@ document.addEventListener('DOMContentLoaded', function() {
     \`);
 });
 
-// Utility functions for demonstrations
 function showAlert(message) {
-    alert('🎯 ' + message);
+    alert(message);
 }
 
 function logToConsole(message) {
     console.log('📝 ' + message);
 }
 
-// Example of modern JavaScript features
 const playground = {
     name: 'HTML/CSS/JS Playground',
     version: '1.0.0',
     features: ['Live Preview', 'Multi-file Support', 'Syntax Highlighting'],
     
-    // Method using arrow function
     getInfo: () => {
         return \`Welcome to \${playground.name} v\${playground.version}\`;
     },
     
-    // Method using template literals
     listFeatures() {
         return this.features.map(feature => \`✨ \${feature}\`).join('\\n');
     }
 };
 
-// Export for use in other scripts (if needed)
 window.playground = playground;`;
