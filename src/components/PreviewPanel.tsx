@@ -58,7 +58,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview</title>
     <style>
-      
         ${previewContent.css}
     </style>
 </head>
@@ -131,12 +130,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  // Update preview when content changes or console visibility changes
   useEffect(() => {
     updatePreview();
   }, [previewContent]);
 
-  // Also update preview when console visibility changes to ensure iframe content persists
   useEffect(() => {
     // Small delay to ensure DOM is updated
     const timer = setTimeout(() => {
@@ -153,14 +150,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
       setIsGlobalDragging(cursor === "row-resize" || cursor === "col-resize");
     };
 
-    // Create an observer to watch for cursor changes
+    // observer to watch for cursor changes
     const observer = new MutationObserver(checkDragState);
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["style"],
     });
 
-    // Also check periodically as a fallback
+    // check periodically as a fallback
     const interval = setInterval(checkDragState, 50);
 
     return () => {
