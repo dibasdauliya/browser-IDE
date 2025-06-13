@@ -231,8 +231,6 @@ export const useFileSystem = (storageKey?: string) => {
   }, [fileSystem.files, fileSystem.openFiles]);
 
   const uploadFiles = useCallback((files: File[]) => {
-    const newFiles: FileItem[] = [];
-
     files.forEach((file) => {
       const id = generateId();
       const extension = getFileExtension(file.name);

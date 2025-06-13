@@ -22,10 +22,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [isConsoleVisible, setIsConsoleVisible] = useState(true);
-  const [isGlobalDragging, setIsGlobalDragging] = useState(false);
 
-  // Check if any dragging is happening (horizontal, vertical, or global)
-  const isAnyDragActive = isDragging || isAnyDragging || isGlobalDragging;
+  const isAnyDragActive = isDragging || isAnyDragging;
 
   const addConsoleMessage = (type: ConsoleMessage["type"], message: string) => {
     const newMessage: ConsoleMessage = {
