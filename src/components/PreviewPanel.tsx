@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Eye,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
-  Terminal,
-  X,
-  Trash2,
-} from "lucide-react";
+import { Eye, RefreshCw, Terminal, X, Trash2 } from "lucide-react";
 import { useDragContext } from "./DragContext";
 import { Console } from "./Console";
 import type { ConsoleMessage } from "./Console";
@@ -53,7 +45,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     if (!document) return;
 
-    // Create the complete HTML document with console capture
     const fullHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -99,22 +90,21 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             }, '*');
         };
 
-        // Override console methods
         console.log = (...args) => sendMessage('log', ...args);
         console.error = (...args) => sendMessage('error', ...args);
         console.warn = (...args) => sendMessage('warn', ...args);
         console.info = (...args) => sendMessage('info', ...args);
 
-        // Execute the user's JavaScript code
+        // execute the user's JavaScript code
         try {
-            ${previewContent.js}
+            new Function(${JSON.stringify(previewContent.js)})();
         } catch (error) {
             console.error('JavaScript Error:', error.message);
-            document.body.innerHTML += '<div style="color: red; background: #fee; padding: 10px; margin: 10px 0; border: 1px solid #fcc; border-radius: 4px;"><strong>JavaScript Error:</strong> ' + error.message + '</div>';
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'color: red; background: #fee; padding: 10px; margin: 10px 0; border: 1px solid #fcc; border-radius: 4px; font-family: monospace; white-space: pre-wrap;';
+            errorDiv.innerHTML = '<strong>JavaScript Error:</strong><br>' + error.message;
+            document.body.appendChild(errorDiv);
         }
-
-        // Send a test message to verify console is working
-        console.log('Preview loaded successfully');
     </script>
 </body>
 </html>
@@ -148,8 +138,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   };
 
   const handleRefresh = () => {
-    setConsoleMessages([]);
-    setIsConsoleVisible(true);
+    window.location.reload();
   };
 
   const toggleConsole = () => {

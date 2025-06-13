@@ -9,7 +9,7 @@ export const DEFAULT_HTML_CODE = `<!DOCTYPE html>
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Welcome to the Web Playground!</h1>
+            <h1>Welcome to the Web Playground!</h1>
             <p>Edit HTML, CSS, and JavaScript files to see live changes</p>
         </header>
         
@@ -24,11 +24,11 @@ export const DEFAULT_HTML_CODE = `<!DOCTYPE html>
             <section class="card">
                 <h2>Features</h2>
                 <ul>
-                    <li>✨ Live preview updates</li>
-                    <li>📁 Multiple file support</li>
-                    <li>🎨 CSS styling</li>
-                    <li>⚡ JavaScript interactions</li>
-                    <li>📱 Responsive design</li>
+                    <li>Live preview updates</li>
+                    <li>Multiple file support</li>
+                    <li>CSS styling</li>
+                    <li>JavaScript interactions</li>
+                    <li>Responsive design</li>
                 </ul>
             </section>
         </main>
