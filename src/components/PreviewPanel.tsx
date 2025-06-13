@@ -45,10 +45,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     setConsoleMessages((prev) => [...prev, newMessage]);
   };
 
-  const clearConsole = () => {
-    setConsoleMessages([]);
-  };
-
   const updatePreview = () => {
     if (!iframeRef.current) return;
 
@@ -103,18 +99,22 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             }, '*');
         };
 
+        // Override console methods
         console.log = (...args) => sendMessage('log', ...args);
         console.error = (...args) => sendMessage('error', ...args);
         console.warn = (...args) => sendMessage('warn', ...args);
         console.info = (...args) => sendMessage('info', ...args);
 
-        // Wrap user JS in try-catch to capture errors
+        // Execute the user's JavaScript code
         try {
             ${previewContent.js}
         } catch (error) {
             console.error('JavaScript Error:', error.message);
             document.body.innerHTML += '<div style="color: red; background: #fee; padding: 10px; margin: 10px 0; border: 1px solid #fcc; border-radius: 4px;"><strong>JavaScript Error:</strong> ' + error.message + '</div>';
         }
+
+        // Send a test message to verify console is working
+        console.log('Preview loaded successfully');
     </script>
 </body>
 </html>
@@ -138,45 +138,25 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // Update preview when content changes
   useEffect(() => {
     updatePreview();
   }, [previewContent]);
 
+  // Update preview when console visibility changes
   useEffect(() => {
-    // Small delay to ensure DOM is updated
-    const timer = setTimeout(() => {
+    if (isConsoleVisible) {
       updatePreview();
-    }, 50);
-    return () => clearTimeout(timer);
+    }
   }, [isConsoleVisible]);
 
-  // Global drag detection by monitoring body cursor changes
-  useEffect(() => {
-    const checkDragState = () => {
-      const bodyStyle = window.getComputedStyle(document.body);
-      const cursor = bodyStyle.cursor;
-      setIsGlobalDragging(cursor === "row-resize" || cursor === "col-resize");
-    };
-
-    // observer to watch for cursor changes
-    const observer = new MutationObserver(checkDragState);
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-
-    // check periodically as a fallback
-    const interval = setInterval(checkDragState, 50);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, []);
+  const clearConsole = () => {
+    setConsoleMessages([]);
+    updatePreview();
+  };
 
   const handleRefresh = () => {
     clearConsole();
-    updatePreview();
   };
 
   const toggleConsole = () => {
