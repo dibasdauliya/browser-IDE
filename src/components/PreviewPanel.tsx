@@ -141,21 +141,15 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   // Update preview when content changes
   useEffect(() => {
     updatePreview();
-  }, [previewContent]);
-
-  // Update preview when console visibility changes
-  useEffect(() => {
-    if (isConsoleVisible) {
-      updatePreview();
-    }
-  }, [isConsoleVisible]);
+  }, [previewContent, isConsoleVisible]);
 
   const clearConsole = () => {
     setConsoleMessages([]);
   };
 
   const handleRefresh = () => {
-    updatePreview();
+    setConsoleMessages([]);
+    setIsConsoleVisible(true);
   };
 
   const toggleConsole = () => {
