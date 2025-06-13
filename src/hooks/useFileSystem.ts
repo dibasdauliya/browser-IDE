@@ -282,8 +282,6 @@ export const useFileSystem = (storageKey?: string) => {
   const downloadAllFiles = useCallback(() => {
     if (fileSystem.files.length === 0) return;
 
-    // Create a zip-like structure by downloading individual files
-    // For a more advanced implementation, you could use JSZip library
     fileSystem.files.forEach((file) => {
       setTimeout(
         () => downloadFile(file.id),

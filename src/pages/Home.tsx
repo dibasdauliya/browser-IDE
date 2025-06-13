@@ -111,50 +111,12 @@ export const Home = () => {
             </Link>
           </div>
 
-          {/* Features Section */}
-          <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 mb-16">
-            <h3 className="text-2xl font-bold text-center mb-8">
-              Why Browser IDE?
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-blue-600 p-3 rounded-xl w-fit mx-auto mb-4">
-                  <Code className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-semibold mb-2">Zero Setup</h4>
-                <p className="text-gray-400">
-                  No downloads or installations. Start coding immediately in
-                  your browser.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-green-600 p-3 rounded-xl w-fit mx-auto mb-4">
-                  <Terminal className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-semibold mb-2">Full-Featured</h4>
-                <p className="text-gray-400">
-                  Complete development environment with syntax highlighting and
-                  package management.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-purple-600 p-3 rounded-xl w-fit mx-auto mb-4">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-semibold mb-2">Cross-Platform</h4>
-                <p className="text-gray-400">
-                  Works on any device with a modern browser. Code anywhere,
-                  anytime.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
           <footer className="text-center">
             <div className="flex items-center justify-center space-x-6 mb-6">
               <a
-                href="#"
+                href="https://github.com/dibasdauliya/web-IDE"
+                rel="noopener noreferrer"
+                target="_blank"
                 className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
               >
                 <Github className="w-5 h-5" />

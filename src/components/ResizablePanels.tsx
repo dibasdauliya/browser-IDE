@@ -37,7 +37,6 @@ export const ResizablePanels = ({
       const newLeftWidth =
         ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-      // Apply constraints
       const constrainedWidth = Math.max(
         minLeftWidth,
         Math.min(100 - minRightWidth, newLeftWidth)
@@ -76,7 +75,6 @@ export const ResizablePanels = ({
   return (
     <DragProvider isDragging={isDragging}>
       <div ref={containerRef} className="flex h-full w-full">
-        {/* Left Panel */}
         <div
           style={{ width: `${leftWidth}%` }}
           className="h-full overflow-hidden"

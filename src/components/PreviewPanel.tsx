@@ -95,12 +95,18 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         console.warn = (...args) => sendMessage('warn', ...args);
         console.info = (...args) => sendMessage('info', ...args);
 
-        // execute the user's JavaScript code
+        // Execute the user's JavaScript code
         try {
-            new Function(${JSON.stringify(previewContent.js)})();
+            // Remove any existing error messages
+            const errorDivs = document.querySelectorAll('[data-error-message]');
+            errorDivs.forEach(div => div.remove());
+
+            // Execute the code
+            ${previewContent.js}
         } catch (error) {
             console.error('JavaScript Error:', error.message);
             const errorDiv = document.createElement('div');
+            errorDiv.setAttribute('data-error-message', 'true');
             errorDiv.style.cssText = 'color: red; background: #fee; padding: 10px; margin: 10px 0; border: 1px solid #fcc; border-radius: 4px; font-family: monospace; white-space: pre-wrap;';
             errorDiv.innerHTML = '<strong>JavaScript Error:</strong><br>' + error.message;
             document.body.appendChild(errorDiv);
