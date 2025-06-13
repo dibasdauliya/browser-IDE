@@ -152,11 +152,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   const clearConsole = () => {
     setConsoleMessages([]);
-    updatePreview();
   };
 
   const handleRefresh = () => {
-    clearConsole();
+    updatePreview();
   };
 
   const toggleConsole = () => {
