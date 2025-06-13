@@ -21,13 +21,10 @@ export const usePyodide = () => {
       try {
         const pyodideInstance = await window.loadPyodide();
 
-        // Install commonly used packages
         setOutput("Loading Python and installing common packages...");
 
-        // Install micropip first (it's usually already available)
         await pyodideInstance.loadPackage("micropip");
 
-        // Configure basic Python environment
         await pyodideInstance.runPythonAsync(`
           import warnings
           import sys
@@ -53,7 +50,6 @@ export const usePyodide = () => {
           builtins.input = browser_input
         `);
 
-        // Common packages to pre-install
         const commonPackages = ["requests", "numpy", "matplotlib"];
         const installedSet = new Set<string>();
 
@@ -71,7 +67,7 @@ export const usePyodide = () => {
           }
         }
 
-        // Configure urllib3 and requests after installation
+        // this is to suppress SSL warnings
         try {
           await pyodideInstance.runPythonAsync(`
             # Configure urllib3 and requests to suppress SSL warnings
@@ -190,7 +186,6 @@ export const usePyodide = () => {
       }
     };
 
-    // Load Pyodide script
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js";
     script.onload = () => loadPy();
@@ -220,14 +215,14 @@ export const usePyodide = () => {
       `);
 
       setInstalledPackages((prev) => new Set([...prev, packageName]));
-      setOutput((prev) => prev + `\n✅ Successfully installed ${packageName}`);
+      setOutput((prev) => prev + `\nSuccessfully installed ${packageName}`);
       return true;
     } catch (error) {
       const cleanError = String(error).includes("No such package")
         ? `Package '${packageName}' not found in PyPI`
         : `Installation failed: ${error}`;
       setOutput(
-        (prev) => prev + `\n❌ Failed to install ${packageName}: ${cleanError}`
+        (prev) => prev + `\nFailed to install ${packageName}: ${cleanError}`
       );
       return false;
     }
@@ -243,28 +238,28 @@ export const usePyodide = () => {
       cleanError.includes("HTTPException")
     ) {
       if (cleanError.includes("A network error occurred")) {
-        return "❌ Network Error: Unable to connect to the server. Please check your internet connection or try again later.";
+        return "Network Error: Unable to connect to the server. Please check your internet connection or try again later.";
       }
-      return "❌ Connection Error: The request was interrupted. This could be due to network issues or server problems.";
+      return "Connection Error: The request was interrupted. This could be due to network issues or server problems.";
     }
 
     // Handle SSL/certificate errors
     if (cleanError.includes("SSL") || cleanError.includes("certificate")) {
-      return "❌ SSL Error: There was a problem with the secure connection. This is often due to server configuration issues.";
+      return "SSL Error: There was a problem with the secure connection. This is often due to server configuration issues.";
     }
 
     // Handle timeout errors
     if (cleanError.includes("timeout") || cleanError.includes("TimeoutError")) {
-      return "❌ Timeout Error: The request took too long to complete. The server might be slow or unreachable.";
+      return "Timeout Error: The request took too long to complete. The server might be slow or unreachable.";
     }
 
     // Handle requests library specific errors
     if (cleanError.includes("requests.exceptions")) {
       if (cleanError.includes("ConnectionError")) {
-        return "❌ Connection Error: Unable to establish a connection to the server.";
+        return "Connection Error: Unable to establish a connection to the server.";
       }
       if (cleanError.includes("RequestException")) {
-        return "❌ Request Error: The HTTP request failed. Please check the URL and try again.";
+        return "Request Error: The HTTP request failed. Please check the URL and try again.";
       }
     }
 
@@ -281,7 +276,7 @@ export const usePyodide = () => {
     if (!pyodideReady || !pyodide || isRunning) return;
 
     setIsRunning(true);
-    setOutput("🚀 Running code...\n");
+    setOutput("Running code...\n");
 
     try {
       let outputBuffer = "";
@@ -342,13 +337,12 @@ export const usePyodide = () => {
       if (moduleNotFoundMatch) {
         const missingModule = moduleNotFoundMatch[1];
         setOutput(
-          `❌ Module '${missingModule}' not found. Installing automatically...\n`
+          `Module '${missingModule}' not found. Installing automatically...\n`
         );
 
         const installed = await installPackage(missingModule);
         if (installed) {
-          setOutput((prev) => prev + `\n🔄 Retrying code execution...\n`);
-          // Retry the code execution
+          setOutput((prev) => prev + `\nRetrying code execution...\n`);
           try {
             let retryOutputBuffer = "";
             pyodide.setStdout({
@@ -367,7 +361,7 @@ export const usePyodide = () => {
             setOutput(
               (prev) =>
                 prev +
-                `\n✅ Code executed successfully after installing ${missingModule}` +
+                `\nCode executed successfully after installing ${missingModule}` +
                 (retryOutput ? `:\n${retryOutput}` : "")
             );
           } catch (retryErr) {
@@ -375,13 +369,13 @@ export const usePyodide = () => {
             setOutput(
               (prev) =>
                 prev +
-                `\n❌ Code failed after installing ${missingModule}:\n${cleanRetryError}`
+                `\nCode failed after installing ${missingModule}:\n${cleanRetryError}`
             );
           }
         }
       } else {
         const cleanError = formatError(errorString);
-        setOutput(`❌ Error:\n${cleanError}`);
+        setOutput(`Error:\n${cleanError}`);
       }
     } finally {
       setIsRunning(false);
