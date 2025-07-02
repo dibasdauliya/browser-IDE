@@ -52,8 +52,16 @@ try:
     print(f"NumPy array shape: {x.shape}")
     print(f"Sin values (first 5): {y[:5]}")
     
-    # Note: Matplotlib plots won't display in this simple backend
-    # but the computation works fine
+    # Create a matplotlib plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y, 'b-', linewidth=2, label='sin(x)')
+    plt.plot(x, np.cos(x), 'r--', linewidth=2, label='cos(x)')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Sine and Cosine Functions')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()  # This will be captured and displayed in the frontend
     
 except ImportError as e:
     print(f"Library not available: {e}")
@@ -125,7 +133,7 @@ export function BackendPythonIDE() {
         outputText += `\n❌ Error:\n${result.error}`;
       }
 
-      outputText += `\n\n📊 Execution completed in ${result.execution_time}s (Exit code: ${result.exit_code})`;
+      outputText += `\n\n Execution completed in ${result.execution_time}s (Exit code: ${result.exit_code})`;
 
       setOutput(outputText);
     } catch (error) {
