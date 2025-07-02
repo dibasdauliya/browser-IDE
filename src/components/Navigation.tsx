@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, ArrowLeft, Code, Globe } from "lucide-react";
+import { Home, ArrowLeft, Code, Globe, Server } from "lucide-react";
 
 interface NavigationProps {
   showHomeButton?: boolean;
@@ -11,22 +11,33 @@ export const Navigation = ({ showHomeButton = true }: NavigationProps) => {
   if (!showHomeButton) return null;
 
   const getCurrentPlayground = () => {
-    if (location.pathname === "/python") return "Python IDE";
+    if (location.pathname === "/python") return "Python IDE (Browser)";
+    if (location.pathname === "/python-backend") return "Python IDE (Backend)";
     if (location.pathname === "/web") return "Web Playground";
     return "IDE";
   };
 
-  const getOtherPlayground = () => {
-    if (location.pathname === "/python") {
-      return { name: "Web Playground", path: "/web", icon: Globe };
+  const getOtherPlaygrounds = () => {
+    const playgrounds = [];
+
+    if (location.pathname !== "/python") {
+      playgrounds.push({ name: "Browser Python", path: "/python", icon: Code });
     }
-    if (location.pathname === "/web") {
-      return { name: "Python IDE", path: "/python", icon: Code };
+    if (location.pathname !== "/python-backend") {
+      playgrounds.push({
+        name: "Backend Python",
+        path: "/python-backend",
+        icon: Server,
+      });
     }
-    return null;
+    if (location.pathname !== "/web") {
+      playgrounds.push({ name: "Web Playground", path: "/web", icon: Globe });
+    }
+
+    return playgrounds;
   };
 
-  const otherPlayground = getOtherPlayground();
+  const otherPlaygrounds = getOtherPlaygrounds();
 
   return (
     <div className="flex items-center space-x-3">
@@ -35,17 +46,18 @@ export const Navigation = ({ showHomeButton = true }: NavigationProps) => {
         {getCurrentPlayground()}
       </span>
 
-      {/* Switch playground button */}
-      {otherPlayground && (
+      {/* Switch playground buttons */}
+      {otherPlaygrounds.map((playground) => (
         <Link
-          to={otherPlayground.path}
+          key={playground.path}
+          to={playground.path}
           className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors"
-          title={`Switch to ${otherPlayground.name}`}
+          title={`Switch to ${playground.name}`}
         >
-          <otherPlayground.icon className="w-4 h-4" />
-          <span className="hidden sm:inline">{otherPlayground.name}</span>
+          <playground.icon className="w-4 h-4" />
+          <span className="hidden sm:inline">{playground.name}</span>
         </Link>
-      )}
+      ))}
 
       {/* Home button */}
       <Link

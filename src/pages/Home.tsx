@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { Code, Terminal, ArrowRight, Github, Globe } from "lucide-react";
+import {
+  Code,
+  Terminal,
+  ArrowRight,
+  Github,
+  Globe,
+  Server,
+} from "lucide-react";
 
 export const Home = () => {
   return (
@@ -20,8 +27,8 @@ export const Home = () => {
           </p>
         </header>
 
-        <main className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+        <main className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-16">
             {/* Python IDE Card */}
             <Link
               to="/python"
@@ -33,10 +40,10 @@ export const Home = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">
-                    Python IDE
+                    Python IDE (Browser)
                   </h2>
                   <p className="text-gray-400">
-                    Full-featured Python environment
+                    Python environment via Pyodide
                   </p>
                 </div>
               </div>
@@ -62,6 +69,48 @@ export const Home = () => {
 
               <div className="flex items-center text-blue-400 group-hover:text-blue-300 transition-colors">
                 <span className="font-medium">Start coding in Python</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Backend Python IDE Card */}
+            <Link
+              to="/python-backend"
+              className="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-orange-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+            >
+              <div className="flex items-center mb-6">
+                <div className="bg-orange-600 p-3 rounded-xl mr-4 group-hover:bg-orange-500 transition-colors">
+                  <Server className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Python IDE (Backend)
+                  </h2>
+                  <p className="text-gray-400">Real Python server execution</p>
+                </div>
+              </div>
+
+              <ul className="space-y-3 mb-6 text-gray-300">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                  Native Python environment
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                  Full library support
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                  Real file system access
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                  Network requests & APIs
+                </li>
+              </ul>
+
+              <div className="flex items-center text-orange-400 group-hover:text-orange-300 transition-colors">
+                <span className="font-medium">Use real Python server</span>
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>

@@ -2,6 +2,8 @@ import { Terminal } from "lucide-react";
 import type { OutputPanelProps } from "../types";
 
 export const OutputPanel = ({ output, onClear }: OutputPanelProps) => {
+  console.log({ output });
+  console.log(output.split("\n"));
   // Process output to handle both text and HTML content
   const processOutput = (text: string) => {
     // Convert newlines to <br/> tags for plain text parts
