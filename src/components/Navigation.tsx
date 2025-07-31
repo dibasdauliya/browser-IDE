@@ -23,6 +23,7 @@ export const Navigation = ({ showHomeButton = true }: NavigationProps) => {
     if (location.pathname === "/python") return "Python IDE (Browser)";
     if (location.pathname === "/python-backend") return "Python IDE (Backend)";
     if (location.pathname === "/web") return "Web Playground";
+    if (location.pathname === "/c") return "C IDE";
     return "IDE";
   };
 
@@ -31,6 +32,7 @@ export const Navigation = ({ showHomeButton = true }: NavigationProps) => {
       { name: "Browser Python", path: "/python", icon: Code },
       { name: "Backend Python", path: "/python-backend", icon: Server },
       { name: "Web Playground", path: "/web", icon: Globe },
+      { name: "C IDE", path: "/c", icon: Code },
     ];
 
     return playgrounds;

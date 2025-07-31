@@ -116,3 +116,87 @@ print("- Common packages (requests, numpy, matplotlib) are pre-installed")
 print("- Missing packages are auto-installed when imported")
 print("- Upload/download files using the File Explorer")
 `;
+
+export const DEFAULT_C_CODE = `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+// Example 1: Basic C program structure
+int main() {
+    printf("Welcome to the C Browser IDE!\\n");
+    
+    // Example 2: Variables and data types
+    int number = 42;
+    float pi = 3.14159f;
+    char message[] = "Hello, C!";
+    
+    printf("Number: %d\\n", number);
+    printf("Pi: %.5f\\n", pi);
+    printf("Message: %s\\n", message);
+    
+    // Example 3: Arrays and loops
+    int numbers[] = {1, 2, 3, 4, 5};
+    int sum = 0;
+    
+    printf("\\nArray elements: ");
+    for (int i = 0; i < 5; i++) {
+        printf("%d ", numbers[i]);
+        sum += numbers[i];
+    }
+    printf("\\nSum: %d\\n", sum);
+    
+    // Example 4: Functions
+    int factorial(int n) {
+        if (n <= 1) return 1;
+        return n * factorial(n - 1);
+    }
+    
+    printf("\\nFactorial of 5: %d\\n", factorial(5));
+    
+    // Example 5: Pointers
+    int x = 10;
+    int *ptr = &x;
+    
+    printf("\\nPointer example:\\n");
+    printf("Value of x: %d\\n", x);
+    printf("Address of x: %p\\n", (void*)&x);
+    printf("Value at ptr: %d\\n", *ptr);
+    
+    // Example 6: Dynamic memory allocation
+    int *dynamic_array = (int*)malloc(5 * sizeof(int));
+    if (dynamic_array != NULL) {
+        for (int i = 0; i < 5; i++) {
+            dynamic_array[i] = i * 2;
+        }
+        
+        printf("\\nDynamic array: ");
+        for (int i = 0; i < 5; i++) {
+            printf("%d ", dynamic_array[i]);
+        }
+        printf("\\n");
+        
+        free(dynamic_array);
+    }
+    
+    // Example 7: Math functions
+    printf("\\nMath functions:\\n");
+    printf("Square root of 16: %.2f\\n", sqrt(16));
+    printf("Power 2^8: %.0f\\n", pow(2, 8));
+    printf("Sine of 90 degrees: %.4f\\n", sin(90 * M_PI / 180));
+    
+    // Example 8: String operations
+    char str1[] = "Hello";
+    char str2[] = "World";
+    char result[50];
+    
+    strcpy(result, str1);
+    strcat(result, " ");
+    strcat(result, str2);
+    
+    printf("\\nString concatenation: %s\\n", result);
+    printf("Length of result: %zu\\n", strlen(result));
+    
+    printf("\\nC program completed successfully!\\n");
+    return 0;
+}`;
