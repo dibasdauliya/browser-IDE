@@ -34,9 +34,18 @@ export const FileExplorer = ({
 
   const handleCreateFile = () => {
     if (newFileName.trim()) {
-      const fileName = newFileName.trim().endsWith(".py")
+      // Determine the appropriate extension based on the current context
+      const hasPyFiles = files.some((f) => f.extension === "py");
+      const hasCFiles = files.some((f) => f.extension === "c");
+      const hasHtmlFiles = files.some((f) => f.extension === "html");
+
+      let defaultExtension = "py";
+      if (hasCFiles) defaultExtension = "c";
+      else if (hasHtmlFiles) defaultExtension = "html";
+
+      const fileName = newFileName.trim().includes(".")
         ? newFileName.trim()
-        : `${newFileName.trim()}.py`;
+        : `${newFileName.trim()}.${defaultExtension}`;
       onFileCreate(fileName);
       setNewFileName("");
       setIsCreating(false);
@@ -98,6 +107,16 @@ export const FileExplorer = ({
     switch (extension) {
       case "py":
         return <FileText className="w-4 h-4 text-green-400" />;
+      case "c":
+        return <FileText className="w-4 h-4 text-blue-400" />;
+      case "h":
+        return <FileText className="w-4 h-4 text-blue-300" />;
+      case "html":
+        return <FileText className="w-4 h-4 text-orange-400" />;
+      case "css":
+        return <FileText className="w-4 h-4 text-purple-400" />;
+      case "js":
+        return <FileText className="w-4 h-4 text-yellow-400" />;
       default:
         return <File className="w-4 h-4 text-gray-400" />;
     }
@@ -145,7 +164,7 @@ export const FileExplorer = ({
         ref={fileInputRef}
         type="file"
         multiple
-        accept=".py,.txt,.js,.ts,.json,.md,.yml,.yaml,.xml,.html,.css,.sh,.bat"
+        accept=".py,.c,.h,.txt,.js,.ts,.json,.md,.yml,.yaml,.xml,.html,.css,.sh,.bat"
         onChange={handleFileUpload}
         className="hidden"
       />

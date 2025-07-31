@@ -334,6 +334,207 @@ atexit.register(_capture_remaining_plots)
             'execution_time': 0
         }), 500
 
+@app.route('/api/compile-c', methods=['POST'])
+def compile_c():
+    """Compile and run C code"""
+    try:
+        data = request.get_json()
+        if not data or 'code' not in data:
+            return jsonify({'error': 'No C code provided'}), 400
+        
+        c_code = data['code']
+        if not c_code.strip():
+            return jsonify({'error': 'C code cannot be empty'}), 400
+        
+        # Create a temporary directory for compilation
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Write C code to a temporary file
+            c_file_path = os.path.join(temp_dir, 'main.c')
+            with open(c_file_path, 'w') as f:
+                f.write(c_code)
+            
+            # Compile the C code
+            executable_path = os.path.join(temp_dir, 'program')
+            if os.name == 'nt':  # Windows
+                executable_path += '.exe'
+            
+            # Try to compile with gcc
+            compile_result = subprocess.run(
+                ['gcc', '-o', executable_path, c_file_path, '-lm'],  # -lm for math functions
+                capture_output=True,
+                text=True,
+                timeout=30  # 30 second timeout for compilation
+            )
+            
+            if compile_result.returncode != 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'Compilation failed',
+                    'compilation_error': compile_result.stderr
+                }), 400
+            
+            # Execute the compiled program
+            try:
+                run_result = subprocess.run(
+                    [executable_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,  # 10 second timeout for execution
+                    input="",  # Provide empty input to prevent hanging on scanf
+                    bufsize=0  # Unbuffered I/O
+                )
+                
+                output = run_result.stdout
+                error_output = run_result.stderr
+                
+                # Check if the program is waiting for input
+                if "Enter" in output or "scanf" in error_output.lower():
+                    return jsonify({
+                        'success': False,
+                        'error': 'Program requires interactive input (scanf).',
+                        'needs_input': True,
+                        'output': output,
+                        'error_output': error_output,
+                        'message': 'This program uses scanf() for input. Please provide input values in the frontend.'
+                    }), 400
+                
+                return jsonify({
+                    'success': True,
+                    'output': output,
+                    'error_output': error_output,
+                    'return_code': run_result.returncode
+                })
+                
+            except subprocess.TimeoutExpired:
+                return jsonify({
+                    'success': False,
+                    'error': 'Program execution timed out (10 seconds). This may be due to scanf() waiting for input.'
+                }), 400
+                
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'success': False,
+            'error': 'Compilation timed out (30 seconds)'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/compile-c-with-input', methods=['POST'])
+def compile_c_with_input():
+    """Compile and run C code with interactive input support"""
+    try:
+        data = request.get_json()
+        if not data or 'code' not in data:
+            return jsonify({'error': 'No C code provided'}), 400
+        
+        c_code = data['code']
+        inputs = data.get('inputs', [])  # List of input values
+        if not c_code.strip():
+            return jsonify({'error': 'C code cannot be empty'}), 400
+        
+        # Create a temporary directory for compilation
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Write C code to a temporary file
+            c_file_path = os.path.join(temp_dir, 'main.c')
+            with open(c_file_path, 'w') as f:
+                f.write(c_code)
+            
+            # Compile the C code
+            executable_path = os.path.join(temp_dir, 'program')
+            if os.name == 'nt':  # Windows
+                executable_path += '.exe'
+            
+            # Try to compile with gcc
+            compile_result = subprocess.run(
+                ['gcc', '-o', executable_path, c_file_path, '-lm'],  # -lm for math functions
+                capture_output=True,
+                text=True,
+                timeout=30  # 30 second timeout for compilation
+            )
+            
+            if compile_result.returncode != 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'Compilation failed',
+                    'compilation_error': compile_result.stderr
+                }), 400
+            
+            # Execute the compiled program with input
+            try:
+                # Prepare input string
+                input_string = '\n'.join(str(inp) for inp in inputs) + '\n'
+                
+                run_result = subprocess.run(
+                    [executable_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,  # 10 second timeout for execution
+                    input=input_string,
+                    bufsize=0  # Unbuffered I/O
+                )
+                
+                output = run_result.stdout
+                error_output = run_result.stderr
+                
+                return jsonify({
+                    'success': True,
+                    'output': output,
+                    'error_output': error_output,
+                    'return_code': run_result.returncode
+                })
+                
+            except subprocess.TimeoutExpired:
+                return jsonify({
+                    'success': False,
+                    'error': 'Program execution timed out (10 seconds)'
+                }), 400
+                
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'success': False,
+            'error': 'Compilation timed out (30 seconds)'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/check-c-compiler', methods=['GET'])
+def check_c_compiler():
+    """Check if C compiler (gcc) is available"""
+    try:
+        result = subprocess.run(
+            ['gcc', '--version'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0:
+            return jsonify({
+                'available': True,
+                'version': result.stdout.split('\n')[0]
+            })
+        else:
+            return jsonify({
+                'available': False,
+                'error': 'gcc not found or not working'
+            })
+    except FileNotFoundError:
+        return jsonify({
+            'available': False,
+            'error': 'gcc not installed'
+        })
+    except Exception as e:
+        return jsonify({
+            'available': False,
+            'error': f'Error checking gcc: {str(e)}'
+        })
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy', 'message': 'Python execution service is running'})
@@ -345,6 +546,9 @@ if __name__ == '__main__':
     print("  - http://localhost:5001/api/execute")
     print("  - http://localhost:5001/api/install-package")
     print("  - http://localhost:5001/api/list-packages")
+    print("  - http://localhost:5001/api/compile-c")
+    print("  - http://localhost:5001/api/compile-c-with-input")
+    print("  - http://localhost:5001/api/check-c-compiler")
     
     # Ensure user virtual environment is created on startup
     ensure_user_venv()

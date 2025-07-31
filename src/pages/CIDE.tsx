@@ -5,18 +5,21 @@ import {
   FileExplorer,
   FileEditorPanel,
   RightPanel,
+  CInputHandler,
 } from "../components";
-import { useEmscripten, useFileSystem } from "../hooks";
+import { useBackendCCompiler, useFileSystem } from "../hooks";
 
 export const CIDE = () => {
   const {
-    emscriptenReady,
+    compilerReady,
     isRunning,
     isCompiling,
     output,
+    needsInput,
     compileAndRun,
+    submitInput,
     clearOutput,
-  } = useEmscripten();
+  } = useBackendCCompiler();
   const {
     files,
     activeFileId,
@@ -31,7 +34,7 @@ export const CIDE = () => {
     uploadFiles,
     downloadFile,
     downloadAllFiles,
-  } = useFileSystem();
+  } = useFileSystem("c-ide");
 
   const activeFile = getActiveFile();
   const openFiles = getOpenFiles();
@@ -44,7 +47,7 @@ export const CIDE = () => {
 
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col relative">
-      <Header pyodideReady={emscriptenReady} leftContent={<Navigation />} />
+      <Header pyodideReady={compilerReady} leftContent={<Navigation />} />
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <ResizablePanels
@@ -79,19 +82,34 @@ export const CIDE = () => {
                   onRun={handleRunCode}
                   onClear={clearOutput}
                   isRunning={isRunning || isCompiling}
-                  pyodideReady={emscriptenReady}
+                  pyodideReady={compilerReady}
                 />
               }
             />
           }
           rightPanel={
-            <RightPanel
-              output={output}
-              onClear={clearOutput}
-              installedPackages={[]}
-              onInstallPackage={async () => false}
-              pyodideReady={emscriptenReady}
-            />
+            <div className="flex flex-col h-full">
+              {needsInput && (
+                <CInputHandler
+                  onSubmit={submitInput}
+                  onCancel={() => {
+                    // Reset the input state
+                    clearOutput();
+                  }}
+                  isRunning={isRunning}
+                  code={activeFile?.content}
+                />
+              )}
+              <div className="flex-1 min-h-0">
+                <RightPanel
+                  output={output}
+                  onClear={clearOutput}
+                  installedPackages={[]}
+                  onInstallPackage={async () => false}
+                  pyodideReady={compilerReady}
+                />
+              </div>
+            </div>
           }
         />
       </div>

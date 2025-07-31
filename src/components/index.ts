@@ -14,3 +14,4 @@ export { PreviewPanel } from "./PreviewPanel";
 export { Console } from "./Console";
 export { VerticalResizablePanels } from "./VerticalResizablePanels";
 export { DragProvider, useDragContext } from "./DragContext";
+export { CInputHandler } from "./CInputHandler";

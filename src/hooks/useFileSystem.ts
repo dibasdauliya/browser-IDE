@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { FileItem, FileSystemState } from "../types";
-import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
+import { DEFAULT_PYTHON_CODE, DEFAULT_C_CODE } from "../constants/defaultCode";
 import {
   DEFAULT_HTML_CODE,
   DEFAULT_CSS_CODE,
@@ -17,6 +17,17 @@ const createDefaultFile = (storageKey?: string): FileItem => {
       content: DEFAULT_HTML_CODE,
       type: "file",
       extension: "html",
+      lastModified: Date.now(),
+    };
+  }
+
+  if (storageKey === "c-ide") {
+    return {
+      id: "main-c",
+      name: "main.c",
+      content: DEFAULT_C_CODE,
+      type: "file",
+      extension: "c",
       lastModified: Date.now(),
     };
   }
@@ -81,10 +92,18 @@ export const useFileSystem = (storageKey?: string) => {
           files: parsed.files || [createDefaultFile(storageKey)],
           activeFileId:
             parsed.activeFileId ||
-            (storageKey === "html-playground" ? "index-html" : "main-py"),
+            (storageKey === "html-playground"
+              ? "index-html"
+              : storageKey === "c-ide"
+              ? "main-c"
+              : "main-py"),
           openFiles:
             parsed.openFiles ||
-            (storageKey === "html-playground" ? ["index-html"] : ["main-py"]),
+            (storageKey === "html-playground"
+              ? ["index-html"]
+              : storageKey === "c-ide"
+              ? ["main-c"]
+              : ["main-py"]),
         };
       }
     } catch (error) {
@@ -97,6 +116,13 @@ export const useFileSystem = (storageKey?: string) => {
         files: defaultFiles,
         activeFileId: "index-html",
         openFiles: ["index-html"],
+      };
+    } else if (storageKey === "c-ide") {
+      const defaultFile = createDefaultFile(storageKey);
+      return {
+        files: [defaultFile],
+        activeFileId: defaultFile.id,
+        openFiles: [defaultFile.id],
       };
     } else {
       const defaultFile = createDefaultFile(storageKey);
