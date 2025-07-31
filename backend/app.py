@@ -133,7 +133,7 @@ def list_packages():
         ensure_user_venv()
         pip_executable = get_pip_executable()
         
-        # List installed packages
+        # List all installed packages first
         result = subprocess.run(
             [pip_executable, 'list'],
             capture_output=True,
@@ -144,16 +144,44 @@ def list_packages():
         if result.returncode == 0:
             # Parse the output to extract package names
             lines = result.stdout.strip().split('\n')[2:]  # Skip header lines
-            packages = []
+            all_packages = []
             for line in lines:
                 if line.strip():
                     parts = line.split()
                     if len(parts) >= 1:
-                        packages.append(parts[0])
+                        all_packages.append(parts[0])
+            
+            # Filter out system packages and dependencies
+            user_packages = []
+            system_packages = {
+                'pip', 'setuptools', 'wheel', 'distlib', 'filelock', 
+                'platformdirs', 'typing-extensions', 'zipp', 'importlib-metadata',
+                'markupsafe', 'click', 'itsdangerous', 'jinja2', 'werkzeug',
+                'flask', 'flask-cors', 'pyparsing', 'python-dateutil', 
+                'six', 'cycler', 'kiwisolver', 'certifi', 'charset-normalizer',
+                'idna', 'urllib3', 'cffi', 'colorama', 'cryptography', 'pycparser',
+                'contourpy',  'distro', 'et_xmlfile', 'fonttools', 'keyring',
+                'keyrings.cryptfile', 'mama', 'more-itertools', 'narwhals',
+                'packaging', 'pytz', 'requests', 'soupsieve', 'termcolor',
+                'typing_extensions', 'tzdata', 'pycryptodome'
+            }
+            
+            user_packages = []
+            for package in all_packages:
+                if (not package.startswith('_') and 
+                    package not in system_packages and
+                    not package.startswith('pip-') and
+                    not package.startswith('setuptools') and
+                    not package.startswith('argon2-') and
+                    not package.startswith('jaraco.') and
+                    not package.startswith('scipy') and
+                    not package.startswith('psutil')):
+                    user_packages.append(package)
             
             return jsonify({
                 'success': True,
-                'packages': packages
+                'packages': user_packages,
+                'all_packages': all_packages  # For debugging
             })
         else:
             return jsonify({

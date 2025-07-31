@@ -54,17 +54,12 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
   };
 
   const commonPackages = [
-    "requests",
     "numpy",
     "pandas",
     "matplotlib",
     "dibas",
-    "scipy",
     "beautifulsoup4",
-    "pillow",
     "openpyxl",
-    "seaborn",
-    "plotly",
   ];
 
   const suggestedPackages = commonPackages.filter(

@@ -124,6 +124,8 @@ export function BackendPythonIDE() {
       const result: PackageListResult = await response.json();
 
       if (result.success && result.packages) {
+        // console.log("packages", result.packages);
+        // console.log("all_packages", result.all_packages);
         setInstalledPackages(result.packages);
       }
     } catch (error) {
