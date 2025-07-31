@@ -76,12 +76,13 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
         <button
           onClick={() => setShowInstallForm(!showInstallForm)}
           disabled={isDisabled}
-          className={`p-1 hover:bg-gray-700 rounded transition-colors ${
+          className={`py-1 px-2 cursor-pointer hover:bg-gray-700 rounded transition-colors ${
             isDisabled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          title="Install new package"
+          } flex items-center gap-2 text-gray-400`}
+          // title="Install new package"
         >
           <Plus className="w-4 h-4 text-gray-400" />
+          <small>Add Package</small>
         </button>
       </div>
 
@@ -106,6 +107,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
               onClick={handleInstallNewPackage}
               disabled={!newPackageName.trim() || isInstalling}
               className="p-1 hover:bg-gray-600 rounded transition-colors disabled:opacity-50"
+              title="Install package"
             >
               {isInstalling && installingPackages.has(newPackageName.trim()) ? (
                 <Loader className="w-3 h-3 text-blue-400 animate-spin" />
@@ -117,6 +119,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
               onClick={handleCancel}
               disabled={isInstalling}
               className="p-1 hover:bg-gray-600 rounded transition-colors disabled:opacity-50"
+              title="Cancel"
             >
               <X className="w-3 h-3 text-red-400" />
             </button>

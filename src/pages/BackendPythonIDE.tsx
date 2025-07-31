@@ -6,6 +6,7 @@ import { ControlButtons } from "../components/ControlButtons";
 import { Navigation } from "../components/Navigation";
 import { ResizablePanels } from "../components/ResizablePanels";
 import { PackageManager } from "../components/PackageManager";
+import { Package, Terminal } from "lucide-react";
 
 const DEFAULT_BACKEND_CODE = `
 import requests
@@ -106,12 +107,17 @@ export function BackendPythonIDE() {
       const response = await fetch("http://localhost:5001/api/health");
       if (response.ok) {
         setBackendStatus("connected");
+        setOutput("Backend connected!");
         // Load installed packages when backend connects
+        setOutput("Loading installed packages...");
         loadInstalledPackages();
+        setOutput("Installed packages loaded!");
+
         return true;
       }
     } catch (error) {
       setBackendStatus("disconnected");
+      setOutput("Backend disconnected!");
       return false;
     }
     return false;
@@ -292,30 +298,6 @@ export function BackendPythonIDE() {
               </button>
             )}
           </div>
-
-          {/* Tab Navigation */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab("output")}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                activeTab === "output"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Output
-            </button>
-            <button
-              onClick={() => setActiveTab("packages")}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                activeTab === "packages"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Packages
-            </button>
-          </div>
         </div>
 
         <div className="flex-1 min-h-0">
@@ -346,6 +328,36 @@ export function BackendPythonIDE() {
             }
             rightPanel={
               <div className="h-full flex flex-col border-l border-gray-700 min-w-0 text-white">
+                {/* Tab Navigation */}
+                <div className="flex border-b border-gray-700 bg-gray-800">
+                  <button
+                    onClick={() => setActiveTab("output")}
+                    className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
+                      activeTab === "output"
+                        ? "text-white bg-gray-900 border-b-2 border-blue-500"
+                        : "text-gray-400 hover:text-white hover:bg-gray-700"
+                    }`}
+                  >
+                    <Terminal className="w-4 h-4" />
+                    <span>Output</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("packages")}
+                    className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
+                      activeTab === "packages"
+                        ? "text-white bg-gray-900 border-b-2 border-blue-500"
+                        : "text-gray-400 hover:text-white hover:bg-gray-700"
+                    }`}
+                  >
+                    <Package className="w-4 h-4" />
+                    <span>Packages</span>
+                    {installedPackages.length > 0 && (
+                      <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                        {installedPackages.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
                 <div className="flex-1 min-h-0">
                   {activeTab === "output" ? (
                     <OutputPanel output={output} onClear={clearOutput} />
