@@ -344,30 +344,15 @@ export function BackendPythonIDE() {
             }
             rightPanel={
               <div className="h-full flex flex-col border-l border-gray-700 min-w-0 text-white">
-                {/* Tab Content */}
                 <div className="flex-1 min-h-0">
                   {activeTab === "output" ? (
                     <OutputPanel output={output} onClear={clearOutput} />
                   ) : (
-                    <div className="h-full flex flex-col">
-                      <div className="flex-1 p-4 overflow-y-auto bg-gray-900">
-                        <div className="text-sm text-gray-400 mb-4">
-                          <p className="mb-2">
-                            Install Python packages that will be available for
-                            your code execution.
-                          </p>
-                          <p className="text-xs">
-                            Packages are installed in a dedicated virtual
-                            environment and persist between sessions.
-                          </p>
-                        </div>
-                      </div>
-                      <PackageManager
-                        installedPackages={installedPackages}
-                        onInstallPackage={installPackage}
-                        isDisabled={backendStatus !== "connected"}
-                      />
-                    </div>
+                    <PackageManager
+                      installedPackages={installedPackages}
+                      onInstallPackage={installPackage}
+                      isDisabled={backendStatus !== "connected"}
+                    />
                   )}
                 </div>
               </div>

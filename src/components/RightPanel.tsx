@@ -58,25 +58,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         {activeTab === "output" ? (
           <OutputPanel output={output} onClear={onClear} />
         ) : (
-          <div className="h-full flex flex-col">
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-900">
-              <div className="text-sm text-gray-400 mb-4">
-                <p className="mb-2">
-                  Python packages are automatically installed when needed, or
-                  you can install them manually below.
-                </p>
-                <p className="text-xs">
-                  Supported packages include: requests, numpy, pandas,
-                  matplotlib, scipy, beautifulsoup4, pillow, and many more.
-                </p>
-              </div>
-            </div>
-            <PackageManager
-              installedPackages={installedPackages}
-              onInstallPackage={onInstallPackage}
-              isDisabled={!pyodideReady}
-            />
-          </div>
+          <PackageManager
+            installedPackages={installedPackages}
+            onInstallPackage={onInstallPackage}
+            isDisabled={!pyodideReady}
+          />
         )}
       </div>
     </div>

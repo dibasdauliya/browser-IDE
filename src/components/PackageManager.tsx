@@ -72,7 +72,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
   );
 
   return (
-    <div className="bg-gray-800 border-t border-gray-700 p-4 max-h-60 overflow-y-auto">
+    <div className="bg-gray-800 border-t border-gray-700 p-4 overflow-y-auto">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-300 flex items-center">
           <Package className="w-4 h-4 mr-2" />
