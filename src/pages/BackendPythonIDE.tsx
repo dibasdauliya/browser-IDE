@@ -5,6 +5,7 @@ import { Header } from "../components/Header";
 import { ControlButtons } from "../components/ControlButtons";
 import { Navigation } from "../components/Navigation";
 import { ResizablePanels } from "../components/ResizablePanels";
+import { PackageManager } from "../components/PackageManager";
 
 const DEFAULT_BACKEND_CODE = `
 import requests
@@ -76,6 +77,19 @@ interface ExecutionResult {
   execution_time: number;
 }
 
+interface PackageInstallResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  output?: string;
+}
+
+interface PackageListResult {
+  success: boolean;
+  packages?: string[];
+  error?: string;
+}
+
 export function BackendPythonIDE() {
   const [code, setCode] = useState(DEFAULT_BACKEND_CODE);
   const [output, setOutput] = useState("");
@@ -83,6 +97,8 @@ export function BackendPythonIDE() {
   const [backendStatus, setBackendStatus] = useState<
     "unknown" | "connected" | "disconnected"
   >("unknown");
+  const [installedPackages, setInstalledPackages] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"output" | "packages">("output");
 
   // Check backend health
   const checkBackendHealth = async () => {
@@ -90,6 +106,8 @@ export function BackendPythonIDE() {
       const response = await fetch("http://localhost:5001/api/health");
       if (response.ok) {
         setBackendStatus("connected");
+        // Load installed packages when backend connects
+        loadInstalledPackages();
         return true;
       }
     } catch (error) {
@@ -97,6 +115,67 @@ export function BackendPythonIDE() {
       return false;
     }
     return false;
+  };
+
+  // Load installed packages from backend
+  const loadInstalledPackages = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/list-packages");
+      const result: PackageListResult = await response.json();
+
+      if (result.success && result.packages) {
+        setInstalledPackages(result.packages);
+      }
+    } catch (error) {
+      console.error("Failed to load packages:", error);
+    }
+  };
+
+  // Install package via backend API
+  const installPackage = async (packageName: string): Promise<boolean> => {
+    try {
+      setOutput((prev) => prev + `\n📦 Installing ${packageName}...`);
+
+      const response = await fetch(
+        "http://localhost:5001/api/install-package",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ package: packageName }),
+        }
+      );
+
+      const result: PackageInstallResult = await response.json();
+
+      if (result.success) {
+        setOutput(
+          (prev) => prev + `\n✅ Successfully installed ${packageName}`
+        );
+        // Reload the package list
+        await loadInstalledPackages();
+        return true;
+      } else {
+        setOutput(
+          (prev) =>
+            prev +
+            `\n❌ Failed to install ${packageName}: ${
+              result.error || "Unknown error"
+            }`
+        );
+        return false;
+      }
+    } catch (error) {
+      setOutput(
+        (prev) =>
+          prev +
+          `\n❌ Failed to install ${packageName}: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+      );
+      return false;
+    }
   };
 
   // Execute code on backend
@@ -212,9 +291,29 @@ export function BackendPythonIDE() {
             )}
           </div>
 
-          {/* <div className="text-sm text-gray-400">
-            Server: http://localhost:5001
-          </div> */}
+          {/* Tab Navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab("output")}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                activeTab === "output"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Output
+            </button>
+            <button
+              onClick={() => setActiveTab("packages")}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                activeTab === "packages"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Packages
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0">
@@ -224,11 +323,6 @@ export function BackendPythonIDE() {
             minRightWidth={30}
             leftPanel={
               <div className="h-full flex flex-col bg-gray-900">
-                <div className="bg-gray-800 border-b border-gray-700 px-4 py-2">
-                  <h3 className="text-sm font-medium text-gray-300">
-                    Backend Python IDE
-                  </h3>
-                </div>
                 <div className="flex-1 min-h-0">
                   <CodeEditor
                     code={code}
@@ -250,7 +344,32 @@ export function BackendPythonIDE() {
             }
             rightPanel={
               <div className="h-full flex flex-col border-l border-gray-700 min-w-0 text-white">
-                <OutputPanel output={output} onClear={clearOutput} />
+                {/* Tab Content */}
+                <div className="flex-1 min-h-0">
+                  {activeTab === "output" ? (
+                    <OutputPanel output={output} onClear={clearOutput} />
+                  ) : (
+                    <div className="h-full flex flex-col">
+                      <div className="flex-1 p-4 overflow-y-auto bg-gray-900">
+                        <div className="text-sm text-gray-400 mb-4">
+                          <p className="mb-2">
+                            Install Python packages that will be available for
+                            your code execution.
+                          </p>
+                          <p className="text-xs">
+                            Packages are installed in a dedicated virtual
+                            environment and persist between sessions.
+                          </p>
+                        </div>
+                      </div>
+                      <PackageManager
+                        installedPackages={installedPackages}
+                        onInstallPackage={installPackage}
+                        isDisabled={backendStatus !== "connected"}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             }
           />
