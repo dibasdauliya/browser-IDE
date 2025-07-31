@@ -1,19 +1,12 @@
-import sys
 import subprocess
 import tempfile
 import os
-import json
-import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import time
-import base64
-import io
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
-import matplotlib.pyplot as plt
 import venv
-import shutil
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes

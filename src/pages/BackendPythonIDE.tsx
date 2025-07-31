@@ -6,70 +6,9 @@ import { ControlButtons } from "../components/ControlButtons";
 import { Navigation } from "../components/Navigation";
 import { ResizablePanels } from "../components/ResizablePanels";
 import { PackageManager } from "../components/PackageManager";
+import { BackendStatusBar } from "../components/BackendStatusBar";
 import { Package, Terminal } from "lucide-react";
-
-const DEFAULT_BACKEND_CODE = `
-import requests
-import json
-from datetime import datetime
-
-print("Hello from the backend!")
-print(f"Current time: {datetime.now()}")
-
-numbers = [1, 2, 3, 4, 5]
-squared = [x**2 for x in numbers]
-print(f"Numbers: {numbers}")
-print(f"Squared: {squared}")
-
-# File operations (temporary files work)
-import tempfile
-import os
-
-with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
-    f.write("Hello from temporary file!")
-    temp_path = f.name
-
-with open(temp_path, 'r') as f:
-    content = f.read()
-    print(f"File content: {content}")
-
-os.unlink(temp_path)  # Clean up
-
-# Network requests
-try:
-    response = requests.get('https://httpbin.org/json', timeout=5)
-    data = response.json()
-    print(f"API Response: {data}")
-except Exception as e:
-    print(f"Network error: {e}")
-
-# Libraries available
-try:
-    import numpy as np
-    import matplotlib.pyplot as plt
-    
-    # Generate some data
-    x = np.linspace(0, 10, 100)
-    y = np.sin(x)
-    
-    print(f"NumPy array shape: {x.shape}")
-    print(f"Sin values (first 5): {y[:5]}")
-    
-    # Create a matplotlib plot
-    plt.figure(figsize=(10, 6))
-    plt.plot(x, y, 'b-', linewidth=2, label='sin(x)')
-    plt.plot(x, np.cos(x), 'r--', linewidth=2, label='cos(x)')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Sine and Cosine Functions')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show()  # This will be captured and displayed in the frontend
-    
-except ImportError as e:
-    print(f"Library not available: {e}")
-
-print("\\nBackend execution completed!")`;
+import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
 
 interface ExecutionResult {
   output: string;
@@ -92,12 +31,13 @@ interface PackageListResult {
 }
 
 export function BackendPythonIDE() {
-  const [code, setCode] = useState(DEFAULT_BACKEND_CODE);
+  const [code, setCode] = useState(DEFAULT_PYTHON_CODE);
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [backendStatus, setBackendStatus] = useState<
     "unknown" | "connected" | "disconnected"
   >("unknown");
+
   const [installedPackages, setInstalledPackages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"output" | "packages">("output");
 
@@ -107,20 +47,25 @@ export function BackendPythonIDE() {
       const response = await fetch("http://localhost:5001/api/health");
       if (response.ok) {
         setBackendStatus("connected");
-        setOutput("Backend connected!");
-        // Load installed packages when backend connects
-        setOutput("Loading installed packages...");
-        loadInstalledPackages();
-        setOutput("Installed packages loaded!");
-
         return true;
       }
     } catch (error) {
       setBackendStatus("disconnected");
-      setOutput("Backend disconnected!");
       return false;
     }
     return false;
+  };
+
+  // Handle backend status change
+  const handleBackendStatusChange = (
+    status: "unknown" | "connected" | "disconnected"
+  ) => {
+    setBackendStatus(status);
+  };
+
+  // Handle backend connection
+  const handleBackendConnect = () => {
+    loadInstalledPackages();
   };
 
   // Load installed packages from backend
@@ -244,28 +189,6 @@ export function BackendPythonIDE() {
     checkBackendHealth();
   }, []);
 
-  const getStatusColor = () => {
-    switch (backendStatus) {
-      case "connected":
-        return "text-green-400";
-      case "disconnected":
-        return "text-red-400";
-      default:
-        return "text-yellow-400";
-    }
-  };
-
-  const getStatusText = () => {
-    switch (backendStatus) {
-      case "connected":
-        return "Backend Connected";
-      case "disconnected":
-        return "Backend Disconnected";
-      default:
-        return "Checking Backend...";
-    }
-  };
-
   return (
     <div className="h-screen flex flex-col bg-gray-900">
       <Header
@@ -275,30 +198,10 @@ export function BackendPythonIDE() {
 
       <div className="flex-1 flex flex-col min-h-0">
         {/* Status Bar */}
-        <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`flex items-center gap-2 ${getStatusColor()}`}>
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  backendStatus === "connected"
-                    ? "bg-green-400"
-                    : backendStatus === "disconnected"
-                    ? "bg-red-400"
-                    : "bg-yellow-400"
-                }`}
-              ></div>
-              <span className="text-sm font-medium">{getStatusText()}</span>
-            </div>
-            {backendStatus === "disconnected" && (
-              <button
-                onClick={checkBackendHealth}
-                className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded transition-colors"
-              >
-                Retry Connection
-              </button>
-            )}
-          </div>
-        </div>
+        <BackendStatusBar
+          onStatusChange={handleBackendStatusChange}
+          onConnect={handleBackendConnect}
+        />
 
         <div className="flex-1 min-h-0">
           <ResizablePanels

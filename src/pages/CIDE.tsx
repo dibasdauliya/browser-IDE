@@ -6,6 +6,7 @@ import {
   FileEditorPanel,
   RightPanel,
   CInputHandler,
+  BackendStatusBar,
 } from "../components";
 import { useBackendCCompiler, useFileSystem } from "../hooks";
 
@@ -50,6 +51,7 @@ export const CIDE = () => {
       <Header pyodideReady={compilerReady} leftContent={<Navigation />} />
 
       <div className="flex-1 min-h-0 overflow-hidden">
+        <BackendStatusBar />
         <ResizablePanels
           initialLeftWidth={75}
           minLeftWidth={50}

@@ -35,7 +35,7 @@ export const FileEditorPanel = ({
   };
 
   return (
-    <div className="h-full flex flex-col min-w-0">
+    <div className="h-[calc(100vh-105px)] flex flex-col min-w-0">
       <FileTabs
         openFiles={openFiles}
         activeFileId={activeFile?.id || null}
