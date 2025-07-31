@@ -4,6 +4,7 @@ import { OutputPanel } from "../components/OutputPanel";
 import { Header } from "../components/Header";
 import { ControlButtons } from "../components/ControlButtons";
 import { Navigation } from "../components/Navigation";
+import { ResizablePanels } from "../components/ResizablePanels";
 
 const DEFAULT_BACKEND_CODE = `
 import requests
@@ -211,50 +212,48 @@ export function BackendPythonIDE() {
             )}
           </div>
 
-          <div className="text-sm text-gray-400">
+          {/* <div className="text-sm text-gray-400">
             Server: http://localhost:5001
-          </div>
+          </div> */}
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex min-h-0">
-          {/* Left Panel - Code Editor */}
-          <div className="flex-1 flex flex-col min-w-0 relative">
-            <div className="bg-gray-800 border-b border-gray-700 px-4 py-2">
-              <h3 className="text-sm font-medium text-gray-300">
-                Backend Python IDE
-              </h3>
-            </div>
-            <div className="flex-1 min-h-0">
-              <CodeEditor code={code} onChange={setCode} language="python" />
-            </div>
-
-            {/* Fixed Control Buttons at Bottom */}
-            {/* <div className="absolute bottom-4 right-4 z-10">
-              <ControlButtons
-                onRun={executeCode}
-                onClear={clearOutput}
-                isRunning={isRunning}
-                pyodideReady={backendStatus === "connected"}
-              />
-            </div> */}
-
-            <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
-              <div className="flex items-center justify-end text-white">
-                <ControlButtons
-                  onRun={executeCode}
-                  onClear={clearOutput}
-                  isRunning={isRunning}
-                  pyodideReady={backendStatus === "connected"}
-                />
+        <div className="flex-1 min-h-0">
+          <ResizablePanels
+            initialLeftWidth={60}
+            minLeftWidth={40}
+            minRightWidth={30}
+            leftPanel={
+              <div className="h-full flex flex-col bg-gray-900">
+                <div className="bg-gray-800 border-b border-gray-700 px-4 py-2">
+                  <h3 className="text-sm font-medium text-gray-300">
+                    Backend Python IDE
+                  </h3>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <CodeEditor
+                    code={code}
+                    onChange={setCode}
+                    language="python"
+                  />
+                </div>
+                <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
+                  <div className="flex items-center justify-end text-white">
+                    <ControlButtons
+                      onRun={executeCode}
+                      onClear={clearOutput}
+                      isRunning={isRunning}
+                      pyodideReady={backendStatus === "connected"}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Right Panel - Output */}
-          <div className="w-1/2 flex flex-col border-l border-gray-700 min-w-0 text-white">
-            <OutputPanel output={output} onClear={clearOutput} />
-          </div>
+            }
+            rightPanel={
+              <div className="h-full flex flex-col border-l border-gray-700 min-w-0 text-white">
+                <OutputPanel output={output} onClear={clearOutput} />
+              </div>
+            }
+          />
         </div>
       </div>
     </div>

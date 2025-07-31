@@ -172,9 +172,6 @@ export const Home = () => {
                 <span>GitHub</span>
               </a>
             </div>
-            <p className="text-gray-500">
-              Built with React, TypeScript, and modern web technologies.
-            </p>
           </footer>
         </main>
       </div>
