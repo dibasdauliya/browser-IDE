@@ -5,6 +5,7 @@ import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { markdown } from "@codemirror/lang-markdown";
+import { cpp } from "@codemirror/lang-cpp";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
@@ -33,6 +34,10 @@ const getLanguageExtension = (language?: string) => {
     case "py":
     case "python":
       return python();
+    case "c":
+    case "cpp":
+    case "c++":
+      return cpp();
     default:
       return python(); // Default to Python for backward compatibility
   }

@@ -146,5 +146,27 @@ export const suggestFixes = (code: string): string[] => {
     suggestions.push("Add #include <stdlib.h> for malloc functions");
   }
 
+  // Check for literal newlines in printf statements
+  if (/printf\([^)]*\n[^)]*\)/.test(code)) {
+    suggestions.push(
+      "Replace literal newlines in printf statements with \\n escape sequences"
+    );
+  }
+
   return suggestions;
+};
+
+export const fixCommonIssues = (code: string): string => {
+  let fixedCode = code;
+
+  // Fix literal newlines in printf statements
+  // This regex finds printf calls that contain literal newlines
+  fixedCode = fixedCode.replace(
+    /printf\(("[^"]*)\n([^"]*"[^)]*)\)/g,
+    (_match, beforeNewline, afterNewline) => {
+      return `printf(${beforeNewline}\\n${afterNewline})`;
+    }
+  );
+
+  return fixedCode;
 };

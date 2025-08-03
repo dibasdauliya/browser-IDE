@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { detectScanfUsage } from "../utils/cCodeHelper";
+import { detectScanfUsage, fixCommonIssues } from "../utils/cCodeHelper";
 
 interface CompilationResult {
   success: boolean;
@@ -72,12 +72,19 @@ export const useBackendCCompiler = () => {
     setOutput("Compiling C code...\n");
 
     try {
+      // Auto-fix common issues before compiling
+      const fixedCode = fixCommonIssues(code);
+
+      if (fixedCode !== code) {
+        setOutput((prev) => prev + "Auto-fixed common syntax issues...\n");
+      }
+
       const response = await fetch(`${BACKEND_URL}/api/compile-c`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: fixedCode }),
       });
 
       const result: CompilationResult = await response.json();

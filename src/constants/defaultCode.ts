@@ -119,13 +119,26 @@ print("- Upload/download files using the File Explorer")
 
 export const DEFAULT_C_CODE = `#include <stdio.h>
 
-int main() {
-    int a = 5;
-    int b = 7;
-    int sum = a + b;
+int add(int a, int b) {
+    return a + b;
+}
 
-    printf("Hello, World!\n");
-    printf("The sum of %d and %d is %d\n", a, b, sum);
+int subtract(int a, int b) {
+    return a - b;
+}
+
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int main() {
+    int x = 10;
+    int y = 5;
+
+    printf("x = %d, y = %d", x, y);
+    printf("\\nAddition: %d", add(x, y));
+    printf("\\nSubtraction: %d", subtract(x, y));
+    printf("\\nMultiplication: %d", multiply(x, y));
 
     return 0;
 }
