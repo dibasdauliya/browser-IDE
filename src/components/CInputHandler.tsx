@@ -18,7 +18,6 @@ export const CInputHandler: React.FC<CInputHandlerProps> = ({
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
   const [currentInputIndex, setCurrentInputIndex] = useState(0);
-  const [isWaitingForInput, setIsWaitingForInput] = useState(true);
 
   // Extract printf text before scanf calls to use as placeholders
   useEffect(() => {
@@ -89,7 +88,7 @@ export const CInputHandler: React.FC<CInputHandlerProps> = ({
         setCurrentInputIndex(newInputs.length);
       } else {
         // All inputs collected, submit
-        setIsWaitingForInput(false);
+        // setIsWaitingForInput(false);
         onSubmit(newInputs);
       }
     }

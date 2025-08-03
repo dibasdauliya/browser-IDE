@@ -35,7 +35,7 @@ export const FileExplorer = ({
   const handleCreateFile = () => {
     if (newFileName.trim()) {
       // Determine the appropriate extension based on the current context
-      const hasPyFiles = files.some((f) => f.extension === "py");
+      // const hasPyFiles = files.some((f) => f.extension === "py");
       const hasCFiles = files.some((f) => f.extension === "c");
       const hasHtmlFiles = files.some((f) => f.extension === "html");
 
