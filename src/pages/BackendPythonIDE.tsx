@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { CodeEditor } from "../components/CodeEditor";
 import { OutputPanel } from "../components/OutputPanel";
 import { Header } from "../components/Header";
-import { ControlButtons } from "../components/ControlButtons";
 import { Navigation } from "../components/Navigation";
 import { ResizablePanels } from "../components/ResizablePanels";
 import { PackageManager } from "../components/PackageManager";
@@ -10,7 +8,6 @@ import { BackendStatusBar } from "../components/BackendStatusBar";
 import { FileExplorer } from "../components/FileExplorer";
 import { FileEditorPanel } from "../components/FileEditorPanel";
 import { Package, Terminal } from "lucide-react";
-import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
 import config from "../config/environment";
 import { useFileSystem } from "../hooks";
 
