@@ -6,6 +6,7 @@ import {
   Github,
   Globe,
   Server,
+  Cpu,
 } from "lucide-react";
 
 export const Home = () => {
@@ -28,7 +29,7 @@ export const Home = () => {
         </header>
 
         <main className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-16">
+          <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 mb-16">
             {/* Python IDE Card */}
             <Link
               to="/python"
@@ -48,7 +49,7 @@ export const Home = () => {
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-6 text-gray-300">
+              {/* <ul className="space-y-3 mb-6 text-gray-300">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
                   Complete Python runtime with Pyodide
@@ -65,7 +66,7 @@ export const Home = () => {
                   <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
                   File upload/download support
                 </li>
-              </ul>
+              </ul> */}
 
               <div className="flex items-center text-blue-400 group-hover:text-blue-300 transition-colors">
                 <span className="font-medium">Start coding in Python</span>
@@ -89,7 +90,7 @@ export const Home = () => {
                   <p className="text-gray-400">Real Python server execution</p>
                 </div>
               </div>
-
+              {/* 
               <ul className="space-y-3 mb-6 text-gray-300">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
@@ -107,7 +108,7 @@ export const Home = () => {
                   <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
                   Network requests & APIs
                 </li>
-              </ul>
+              </ul> */}
 
               <div className="flex items-center text-orange-400 group-hover:text-orange-300 transition-colors">
                 <span className="font-medium">Use real Python server</span>
@@ -134,7 +135,7 @@ export const Home = () => {
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-6 text-gray-300">
+              {/* <ul className="space-y-3 mb-6 text-gray-300">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                   Live HTML/CSS/JS preview
@@ -151,10 +152,31 @@ export const Home = () => {
                   <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                   Multi-file project support
                 </li>
-              </ul>
+              </ul> */}
 
               <div className="flex items-center text-purple-400 group-hover:text-purple-300 transition-colors">
                 <span className="font-medium">Build web projects</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* C IDE Card */}
+            <Link
+              to="/c"
+              className="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+            >
+              <div className="flex items-center mb-6">
+                <div className="bg-red-600 p-3 rounded-xl mr-4 group-hover:bg-red-500 transition-colors">
+                  <Cpu className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">C IDE</h2>
+                  <p className="text-gray-400">Compile and run C programs</p>
+                </div>
+              </div>
+
+              <div className="flex items-center text-red-400 group-hover:text-red-300 transition-colors">
+                <span className="font-medium">Write C programs</span>
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
