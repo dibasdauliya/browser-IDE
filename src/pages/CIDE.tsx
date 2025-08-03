@@ -4,7 +4,7 @@ import {
   Navigation,
   FileExplorer,
   FileEditorPanel,
-  RightPanel,
+  OutputPanel,
   CInputHandler,
   BackendStatusBar,
 } from "../components";
@@ -104,13 +104,7 @@ export const CIDE = () => {
                 />
               )}
               <div className="flex-1 min-h-0">
-                <RightPanel
-                  output={output}
-                  onClear={clearOutput}
-                  installedPackages={[]}
-                  onInstallPackage={async () => false}
-                  pyodideReady={compilerReady}
-                />
+                <OutputPanel output={output} onClear={clearOutput} />
               </div>
             </div>
           }

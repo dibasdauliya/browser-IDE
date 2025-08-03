@@ -11,7 +11,7 @@ import venv
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Global variable to store the user's virtual environment path
+# global variable to store the user's virtual environment path
 USER_VENV_PATH = None
 
 def ensure_user_venv():
