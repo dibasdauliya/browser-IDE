@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { detectScanfUsage, fixCommonIssues } from "../utils/cCodeHelper";
+import config from "../config/environment";
 
 interface CompilationResult {
   success: boolean;
@@ -29,7 +30,7 @@ export const useBackendCCompiler = () => {
   const [needsInput, setNeedsInput] = useState(false);
   const [pendingCode, setPendingCode] = useState("");
 
-  const BACKEND_URL = "http://localhost:5001";
+  const BACKEND_URL = config.BACKEND_URL;
 
   useEffect(() => {
     const checkCompiler = async () => {

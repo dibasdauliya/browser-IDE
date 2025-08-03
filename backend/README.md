@@ -23,7 +23,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
-The server will start on `http://localhost:5001`
+The server will start on `http://localhost:5001` (for local development)
+
+**Note**: The frontend is configured to use environment variables for the backend URL.
+
+- Production: `https://browser-ide.vercel.app`
+- Development: `http://localhost:5001`
 
 ## API Endpoints
 

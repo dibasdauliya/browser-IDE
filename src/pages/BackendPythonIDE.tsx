@@ -9,6 +9,7 @@ import { PackageManager } from "../components/PackageManager";
 import { BackendStatusBar } from "../components/BackendStatusBar";
 import { Package, Terminal } from "lucide-react";
 import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
+import config from "../config/environment";
 
 interface ExecutionResult {
   output: string;
@@ -44,7 +45,7 @@ export function BackendPythonIDE() {
   // Check backend health
   const checkBackendHealth = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/health");
+      const response = await fetch(`${config.BACKEND_URL}/api/health`);
       if (response.ok) {
         setBackendStatus("connected");
         return true;
@@ -71,7 +72,7 @@ export function BackendPythonIDE() {
   // Load installed packages from backend
   const loadInstalledPackages = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/list-packages");
+      const response = await fetch(`${config.BACKEND_URL}/api/list-packages`);
       const result: PackageListResult = await response.json();
 
       if (result.success && result.packages) {
@@ -90,7 +91,7 @@ export function BackendPythonIDE() {
       setOutput((prev) => prev + `\n📦 Installing ${packageName}...`);
 
       const response = await fetch(
-        "http://localhost:5001/api/install-package",
+        `${config.BACKEND_URL}/api/install-package`,
         {
           method: "POST",
           headers: {
@@ -141,12 +142,12 @@ export function BackendPythonIDE() {
       const isHealthy = await checkBackendHealth();
       if (!isHealthy) {
         setOutput(
-          "❌ Backend server is not running!\n\nPlease start the backend server:\n\n1. Navigate to the backend directory\n2. Create a virtual environment: python -m venv venv\n3. Activate it: source venv/bin/activate (or venv\\Scripts\\activate on Windows)\n4. Install dependencies: pip install -r requirements.txt\n5. Start server: python app.py\n\nThe server should be running on http://localhost:5001"
+          `❌ Backend server is not running!\n\nPlease start the backend server:\n\n1. Navigate to the backend directory\n2. Create a virtual environment: python -m venv venv\n3. Activate it: source venv/bin/activate (or venv\\Scripts\\activate on Windows)\n4. Install dependencies: pip install -r requirements.txt\n5. Start server: python app.py\n\nThe server should be running on ${config.BACKEND_URL}`
         );
         return;
       }
 
-      const response = await fetch("http://localhost:5001/api/execute", {
+      const response = await fetch(`${config.BACKEND_URL}/api/execute`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export function BackendPythonIDE() {
       setOutput(
         `❌ Failed to execute code:\n${
           error instanceof Error ? error.message : "Unknown error"
-        }\n\nMake sure the backend server is running on http://localhost:5001`
+        }\n\nMake sure the backend server is running on ${config.BACKEND_URL}`
       );
     } finally {
       setIsRunning(false);

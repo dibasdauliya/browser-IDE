@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import config from "../config/environment";
 
 interface BackendStatusBarProps {
   onStatusChange?: (status: "unknown" | "connected" | "disconnected") => void;
@@ -21,7 +22,7 @@ export const BackendStatusBar = ({
   // Check backend health
   const checkBackendHealth = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/health");
+      const response = await fetch(`${config.BACKEND_URL}/api/health`);
       if (response.ok) {
         setBackendStatus("connected");
         onStatusChange?.("connected");
