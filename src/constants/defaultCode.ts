@@ -3,11 +3,12 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+import dibas
 
 print("Welcome to the Python Browser IDE!")
 print(f"Current time: {datetime.now()}")
+dibas.showName()
 
-# Example 1: Basic calculations
 def calculate_fibonacci(n):
     if n <= 1:
         return n
@@ -23,9 +24,8 @@ class Calculator:
     def multiply(self, a, b):
         return a * b
 
-# Example 2: Working with data structures
 squares = [x**2 for x in range(1, 6)]
-print(f"\\nSquares: {squares}")
+print(f"\nSquares: {squares}")
 
 dictionary = {
     "fruit": "apple",
@@ -36,7 +36,6 @@ dictionary = {
 for key, value in dictionary.items():
     print(f"{key}: {value}")
 
-# Example 3: Data visualization with matplotlib
 def create_sample_plot():
     """
     Create a sample matplotlib plot that displays inline in the output.
@@ -56,12 +55,10 @@ def create_sample_plot():
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    # Show the plot (will display inline in output)
     plt.show()
     
     print("Plot displayed above!")
 
-# Example 4: User input (works with browser prompts)
 def interactive_example():
     """
     Example showing how input() works in the browser environment.
@@ -72,7 +69,6 @@ def interactive_example():
     # print(f"Hello {name}! You are {age} years old.")
     print("Interactive example ready - uncomment the lines above to try input()!")
 
-# Example 5: Network requests (SSL warnings suppressed)
 def fetch_api_data():
     """
     Example of making HTTP requests with proper error handling.
@@ -89,32 +85,23 @@ def fetch_api_data():
     except Exception as e:
         return f"Unexpected error: {e}"
 
-# Run examples
 calc = Calculator("MyCalc")
 result = calc.add(10, 20)
 fib_10 = calculate_fibonacci(10)
 
-print(f"\\nCalculation results:")
+print(f"\nCalculation results:")
 print(f"10 + 20 = {result}")
 print(f"Fibonacci(10) = {fib_10}")
 print(f"π = {math.pi:.4f}")
 
-print(f"\\nCreating sample plot...")
+print(f"\nCreating sample plot...")
 create_sample_plot()
 
-print(f"\\nInteractive input example:")
+print(f"\nInteractive input example:")
 interactive_example()
 
-print(f"\\nNetwork request example:")
+print(f"\nNetwork request example:")
 print(fetch_api_data())
-
-print(f"\\nTips:")
-print("- matplotlib plots display inline in the output panel")
-print("- input() works with browser prompts (prompt dialogs)")
-print("- SSL warnings are automatically suppressed")
-print("- Common packages (requests, numpy, matplotlib) are pre-installed")
-print("- Missing packages are auto-installed when imported")
-print("- Upload/download files using the File Explorer")
 `;
 
 export const DEFAULT_C_CODE = `#include <stdio.h>

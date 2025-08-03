@@ -7,9 +7,12 @@ import { Navigation } from "../components/Navigation";
 import { ResizablePanels } from "../components/ResizablePanels";
 import { PackageManager } from "../components/PackageManager";
 import { BackendStatusBar } from "../components/BackendStatusBar";
+import { FileExplorer } from "../components/FileExplorer";
+import { FileEditorPanel } from "../components/FileEditorPanel";
 import { Package, Terminal } from "lucide-react";
 import { DEFAULT_PYTHON_CODE } from "../constants/defaultCode";
 import config from "../config/environment";
+import { useFileSystem } from "../hooks";
 
 interface ExecutionResult {
   output: string;
@@ -32,7 +35,6 @@ interface PackageListResult {
 }
 
 export function BackendPythonIDE() {
-  const [code, setCode] = useState(DEFAULT_PYTHON_CODE);
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [backendStatus, setBackendStatus] = useState<
@@ -41,6 +43,26 @@ export function BackendPythonIDE() {
 
   const [installedPackages, setInstalledPackages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"output" | "packages">("output");
+
+  // Add file system functionality
+  const {
+    files,
+    activeFileId,
+    createFile,
+    deleteFile,
+    renameFile,
+    selectFile,
+    closeFile,
+    updateFileContent,
+    getActiveFile,
+    getOpenFiles,
+    uploadFiles,
+    downloadFile,
+    downloadAllFiles,
+  } = useFileSystem("backend-python");
+
+  const activeFile = getActiveFile();
+  const openFiles = getOpenFiles();
 
   // Check backend health
   const checkBackendHealth = async () => {
@@ -132,8 +154,13 @@ export function BackendPythonIDE() {
     }
   };
 
-  // Execute code on backend
+  // Execute code on backend - updated to use active file
   const executeCode = async () => {
+    if (!activeFile) {
+      setOutput("❌ No file selected for execution");
+      return;
+    }
+
     setIsRunning(true);
     setOutput("Executing code on backend...\n");
 
@@ -152,7 +179,7 @@ export function BackendPythonIDE() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: activeFile.content }),
       });
 
       const result: ExecutionResult = await response.json();
@@ -167,7 +194,7 @@ export function BackendPythonIDE() {
         outputText += `\n❌ Error:\n${result.error}`;
       }
 
-      outputText += `\n\n Execution completed in ${result.execution_time}s (Exit code: ${result.exit_code})`;
+      outputText += `\n\n✅ Execution completed in ${result.execution_time}s (Exit code: ${result.exit_code})`;
 
       setOutput(outputText);
     } catch (error) {
@@ -206,29 +233,42 @@ export function BackendPythonIDE() {
 
         <div className="flex-1 min-h-0">
           <ResizablePanels
-            initialLeftWidth={60}
-            minLeftWidth={40}
-            minRightWidth={30}
+            initialLeftWidth={75}
+            minLeftWidth={50}
+            minRightWidth={25}
             leftPanel={
-              <div className="h-full flex flex-col bg-gray-900">
-                <div className="flex-1 min-h-0">
-                  <CodeEditor
-                    code={code}
-                    onChange={setCode}
-                    language="python"
+              <ResizablePanels
+                initialLeftWidth={25}
+                minLeftWidth={15}
+                minRightWidth={40}
+                leftPanel={
+                  <FileExplorer
+                    files={files}
+                    activeFileId={activeFileId}
+                    onFileSelect={selectFile}
+                    onFileCreate={createFile}
+                    onFileDelete={deleteFile}
+                    onFileRename={renameFile}
+                    onFileUpload={uploadFiles}
+                    onFileDownload={downloadFile}
+                    onDownloadAll={downloadAllFiles}
+                    defaultExtension="py"
                   />
-                </div>
-                <div className="bg-gray-800 px-4 py-2 border-t border-gray-700 flex-shrink-0">
-                  <div className="flex items-center justify-end text-white">
-                    <ControlButtons
-                      onRun={executeCode}
-                      onClear={clearOutput}
-                      isRunning={isRunning}
-                      pyodideReady={backendStatus === "connected"}
-                    />
-                  </div>
-                </div>
-              </div>
+                }
+                rightPanel={
+                  <FileEditorPanel
+                    activeFile={activeFile}
+                    openFiles={openFiles}
+                    onFileContentChange={updateFileContent}
+                    onFileTabSelect={selectFile}
+                    onFileTabClose={closeFile}
+                    onRun={executeCode}
+                    onClear={clearOutput}
+                    isRunning={isRunning}
+                    pyodideReady={backendStatus === "connected"}
+                  />
+                }
+              />
             }
             rightPanel={
               <div className="h-full flex flex-col border-l border-gray-700 min-w-0 text-white">
