@@ -56,7 +56,7 @@ def install_package():
         if not package_name:
             return jsonify({'error': 'Package name cannot be empty'}), 400
         
-        # Basic security check - prevent installation of potentially dangerous packages
+        # prevent installation of potentially dangerous packages
         dangerous_packages = ['os', 'sys', 'subprocess', 'shutil', 'tempfile', 'pathlib']
         if package_name.lower() in [pkg.lower() for pkg in dangerous_packages]:
             return jsonify({
@@ -64,13 +64,12 @@ def install_package():
                 'error': f'Cannot install {package_name} - this is a built-in Python module'
             }), 400
         
-        # Ensure virtual environment exists
         ensure_user_venv()
         pip_executable = get_pip_executable()
         
         print(f"Installing package: {package_name}")
         
-        # Install the package with user flag to avoid permission issues
+        # install the package with user flag to avoid permission issues
         result = subprocess.run(
             [pip_executable, 'install', '--user', package_name],
             capture_output=True,
@@ -85,7 +84,7 @@ def install_package():
                 'output': result.stdout
             })
         else:
-            # Try without --user flag if it fails
+            # try without --user flag if it fails
             result_no_user = subprocess.run(
                 [pip_executable, 'install', package_name],
                 capture_output=True,
@@ -122,11 +121,10 @@ def install_package():
 def list_packages():
     """List installed packages in the user's virtual environment"""
     try:
-        # Ensure virtual environment exists
         ensure_user_venv()
         pip_executable = get_pip_executable()
         
-        # List all installed packages first
+        # list all installed packages first
         result = subprocess.run(
             [pip_executable, 'list'],
             capture_output=True,
@@ -135,8 +133,8 @@ def list_packages():
         )
         
         if result.returncode == 0:
-            # Parse the output to extract package names
-            lines = result.stdout.strip().split('\n')[2:]  # Skip header lines
+            # parse the output to extract package names
+            lines = result.stdout.strip().split('\n')[2:]  # skip header lines
             all_packages = []
             for line in lines:
                 if line.strip():
@@ -144,7 +142,7 @@ def list_packages():
                     if len(parts) >= 1:
                         all_packages.append(parts[0])
             
-            # Filter out system packages and dependencies
+            # filter out system packages and dependencies
             user_packages = []
             system_packages = {
                 'pip', 'setuptools', 'wheel', 'distlib', 'filelock', 
@@ -174,7 +172,7 @@ def list_packages():
             return jsonify({
                 'success': True,
                 'packages': user_packages,
-                'all_packages': all_packages  # For debugging
+                'all_packages': all_packages
             })
         else:
             return jsonify({
@@ -198,11 +196,10 @@ def execute_python():
         
         code = data['code']
         
-        # Ensure virtual environment exists
         ensure_user_venv()
         python_executable = get_python_executable()
         
-        # Inject matplotlib plot capture code
+        # inject matplotlib plot capture code
         plot_capture_code = '''
 import matplotlib
 matplotlib.use('Agg')
@@ -211,7 +208,7 @@ import base64
 import io
 import sys
 
-# Store original stdout
+# store original stdout
 _original_stdout = sys.stdout
 
 class PlotCapture:
@@ -229,10 +226,10 @@ class PlotCapture:
             return img_base64
         return None
 
-# Create global plot capture instance
+# create global plot capture instance
 _plot_capture = PlotCapture()
 
-# Override plt.show() to capture plots
+# override plt.show() to capture plots
 original_show = plt.show
 def custom_show(*args, **kwargs):
     plot_data = _plot_capture.capture_plot()
@@ -241,7 +238,7 @@ def custom_show(*args, **kwargs):
     
 plt.show = custom_show
 
-# Also capture plots at the end of execution
+# also capture plots at the end of execution
 def _capture_remaining_plots():
     plot_data = _plot_capture.capture_plot()
     if plot_data:
@@ -313,7 +310,6 @@ atexit.register(_capture_remaining_plots)
             }), 500
             
         finally:
-            # Clean up the temporary file
             try:
                 os.unlink(temp_file_path)
             except:
@@ -339,19 +335,19 @@ def compile_c():
         if not c_code.strip():
             return jsonify({'error': 'C code cannot be empty'}), 400
         
-        # Create a temporary directory for compilation
+        # create a temporary directory for compilation
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Write C code to a temporary file
+            # write C code to a temporary file
             c_file_path = os.path.join(temp_dir, 'main.c')
             with open(c_file_path, 'w') as f:
                 f.write(c_code)
             
-            # Compile the C code
+            # compile the C code
             executable_path = os.path.join(temp_dir, 'program')
             if os.name == 'nt':  # Windows
                 executable_path += '.exe'
             
-            # Try to compile with gcc
+            # try to compile with gcc
             compile_result = subprocess.run(
                 ['gcc', '-o', executable_path, c_file_path, '-lm'],  # -lm for math functions
                 capture_output=True,
@@ -428,9 +424,9 @@ def compile_c_with_input():
         if not c_code.strip():
             return jsonify({'error': 'C code cannot be empty'}), 400
         
-        # Create a temporary directory for compilation
+        # create a temporary directory for compilation
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Write C code to a temporary file
+            # write C code to a temporary file
             c_file_path = os.path.join(temp_dir, 'main.c')
             with open(c_file_path, 'w') as f:
                 f.write(c_code)
@@ -535,15 +531,7 @@ def health_check():
 if __name__ == '__main__':
     print("Starting Python Code Execution Backend...")
     print("Backend will be available at: http://localhost:5001")
-    print("API endpoints:")
-    print("  - http://localhost:5001/api/execute")
-    print("  - http://localhost:5001/api/install-package")
-    print("  - http://localhost:5001/api/list-packages")
-    print("  - http://localhost:5001/api/compile-c")
-    print("  - http://localhost:5001/api/compile-c-with-input")
-    print("  - http://localhost:5001/api/check-c-compiler")
     
-    # Ensure user virtual environment is created on startup
     ensure_user_venv()
     print(f"User virtual environment ready at: {USER_VENV_PATH}")
     
