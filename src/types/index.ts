@@ -61,6 +61,7 @@ export interface FileExplorerProps {
   onFileUpload: (files: File[]) => void;
   onFileDownload: (fileId: string) => void;
   onDownloadAll: () => void;
+  defaultExtension?: string;
 }
 
 export interface FileTabsProps {

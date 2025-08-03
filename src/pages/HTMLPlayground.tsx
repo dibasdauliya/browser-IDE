@@ -70,6 +70,7 @@ export const HTMLPlayground = () => {
                   onFileUpload={uploadFiles}
                   onFileDownload={downloadFile}
                   onDownloadAll={downloadAllFiles}
+                  defaultExtension="html"
                 />
               }
               rightPanel={

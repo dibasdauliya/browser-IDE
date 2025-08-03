@@ -24,6 +24,7 @@ export const FileExplorer = ({
   onFileUpload,
   onFileDownload,
   onDownloadAll,
+  defaultExtension = "py",
 }: FileExplorerProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFileName, setNewFileName] = useState("");
@@ -34,15 +35,6 @@ export const FileExplorer = ({
 
   const handleCreateFile = () => {
     if (newFileName.trim()) {
-      // Determine the appropriate extension based on the current context
-      // const hasPyFiles = files.some((f) => f.extension === "py");
-      const hasCFiles = files.some((f) => f.extension === "c");
-      const hasHtmlFiles = files.some((f) => f.extension === "html");
-
-      let defaultExtension = "py";
-      if (hasCFiles) defaultExtension = "c";
-      else if (hasHtmlFiles) defaultExtension = "html";
-
       const fileName = newFileName.trim().includes(".")
         ? newFileName.trim()
         : `${newFileName.trim()}.${defaultExtension}`;
@@ -180,7 +172,7 @@ export const FileExplorer = ({
                 type="text"
                 value={newFileName}
                 onChange={(e) => setNewFileName(e.target.value)}
-                placeholder="filename.py"
+                placeholder={`filename.${defaultExtension}`}
                 className="flex-1 bg-gray-700 text-white text-sm px-2 py-1 rounded border-none outline-none"
                 autoFocus
                 onKeyDown={(e) => {

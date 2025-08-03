@@ -72,6 +72,7 @@ export const CIDE = () => {
                   onFileUpload={uploadFiles}
                   onFileDownload={downloadFile}
                   onDownloadAll={downloadAllFiles}
+                  defaultExtension="c"
                 />
               }
               rightPanel={

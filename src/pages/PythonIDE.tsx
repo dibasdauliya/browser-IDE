@@ -68,6 +68,7 @@ export const PythonIDE = () => {
                   onFileUpload={uploadFiles}
                   onFileDownload={downloadFile}
                   onDownloadAll={downloadAllFiles}
+                  defaultExtension="py"
                 />
               }
               rightPanel={
