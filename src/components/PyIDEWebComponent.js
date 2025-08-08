@@ -413,8 +413,7 @@ class PyIDEWebComponent extends HTMLElement {
             <div class="py-ide-controls">
               <button class="py-ide-button" id="runBtn" disabled>Run</button>
               <button class="py-ide-button secondary" id="clearBtn">Clear Output</button>
-              <span style="font-size: 12px; color: #888; margin-left: auto;" id="runningIndicator"></span>
-              <button class="py-ide-button secondary" id="saveBtn">Save</button>
+              <button class="py-ide-button secondary" id="saveBtn" style="margin-left:auto;">Save</button>
             </div>
           </div>
 
@@ -500,6 +499,17 @@ class PyIDEWebComponent extends HTMLElement {
   handleEditorChange() {
     const activeFile = this.getActiveFile();
     if (activeFile && activeFile.content !== this.lastContent) {
+      // Show saving state on Save button (autosave)
+      const saveBtn = this.shadowRoot.getElementById("saveBtn");
+      const checkSvg =
+        '<svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align: -2px; margin-left:6px; fill:#4ade80;"><path d="M6.173 13.727L.946 8.5l1.414-1.414 3.813 3.813 7.466-7.466 1.414 1.414z"/></svg>';
+      if (saveBtn) {
+        if (!saveBtn.dataset.originalText)
+          saveBtn.dataset.originalText = saveBtn.textContent || "Save";
+        saveBtn.textContent = "Saving...";
+        saveBtn.disabled = true;
+      }
+
       this.lastContent = activeFile.content;
       this.dispatchEvent(
         new CustomEvent("change", {
@@ -512,6 +522,19 @@ class PyIDEWebComponent extends HTMLElement {
       );
       // Persist on change
       this.saveToStorage();
+      // Show Saved ✓ briefly on Save button
+      setTimeout(() => {
+        if (saveBtn) {
+          saveBtn.innerHTML = `Saved ${checkSvg}`;
+          setTimeout(() => {
+            const btn = this.shadowRoot?.getElementById("saveBtn");
+            if (btn) {
+              btn.textContent = btn.dataset.originalText || "Save";
+              btn.disabled = false;
+            }
+          }, 1200);
+        }
+      }, 150);
     }
   }
 
@@ -536,6 +559,17 @@ class PyIDEWebComponent extends HTMLElement {
 
   // Handle save button click
   handleSave() {
+    // Show saving state on button
+    const saveBtn = this.shadowRoot.getElementById("saveBtn");
+    const checkSvg =
+      '<svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align: -2px; margin-left:6px; fill:#4ade80;"><path d="M6.173 13.727L.946 8.5l1.414-1.414 3.813 3.813 7.466-7.466 1.414 1.414z"/></svg>';
+    if (saveBtn) {
+      if (!saveBtn.dataset.originalText)
+        saveBtn.dataset.originalText = saveBtn.textContent || "Save";
+      saveBtn.textContent = "Saving...";
+      saveBtn.disabled = true;
+    }
+
     // Persist first
     this.saveToStorage();
 
@@ -548,6 +582,20 @@ class PyIDEWebComponent extends HTMLElement {
         },
       })
     );
+
+    // Show Saved ✓ on button briefly
+    setTimeout(() => {
+      if (saveBtn) {
+        saveBtn.innerHTML = `Saved ${checkSvg}`;
+        setTimeout(() => {
+          const btn = this.shadowRoot?.getElementById("saveBtn");
+          if (btn) {
+            btn.textContent = btn.dataset.originalText || "Save";
+            btn.disabled = false;
+          }
+        }, 1200);
+      }
+    }, 150);
   }
 
   // Load Pyodide
@@ -869,7 +917,7 @@ class PyIDEWebComponent extends HTMLElement {
   }
 
   addFile() {
-    const name = prompt("Enter file name (e.g., script.py):");
+    let name = prompt("Enter file name (e.g., script.py):");
     if (!name) return;
 
     if (!name.endsWith(".py")) {
@@ -987,8 +1035,26 @@ class PyIDEWebComponent extends HTMLElement {
   }
 
   updateRunningIndicator(isRunning) {
-    const indicator = this.shadowRoot.getElementById("runningIndicator");
-    indicator.textContent = isRunning ? "Running..." : "";
+    const runBtn = this.shadowRoot.getElementById("runBtn");
+    const original = runBtn?.dataset?.originalText || "Run";
+    const checkSvg =
+      '<svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align: -2px; margin-left:6px; fill:#4ade80;"><path d="M6.173 13.727L.946 8.5l1.414-1.414 3.813 3.813 7.466-7.466 1.414 1.414z"/></svg>';
+    if (!runBtn) return;
+    if (isRunning) {
+      if (!runBtn.dataset.originalText)
+        runBtn.dataset.originalText = runBtn.textContent || "Run";
+      runBtn.textContent = "Running...";
+      runBtn.disabled = true;
+    } else {
+      runBtn.innerHTML = `Ran ${checkSvg}`;
+      setTimeout(() => {
+        const btn = this.shadowRoot?.getElementById("runBtn");
+        if (btn) {
+          btn.textContent = btn.dataset.originalText || "Run";
+          btn.disabled = !this.pyodideReady;
+        }
+      }, 1200);
+    }
   }
 
   clearOutput() {
