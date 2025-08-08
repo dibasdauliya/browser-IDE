@@ -20,6 +20,7 @@ class PyIDEWebComponent extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     // Initialize state
+    this.storageKey = this.getAttribute("storage-key") || "py-ide";
     this.files = [
       {
         id: "main-py",
@@ -98,12 +99,70 @@ class PyIDEWebComponent extends HTMLElement {
     // Update UI
     this.loadActiveFile();
     this.renderFileTabs();
+    // Persist after setting code
+    this.saveToStorage();
+  }
+
+  // Persistence helpers
+  saveToStorage() {
+    try {
+      const payload = {
+        files: this.files.map((f) => ({
+          id: f.id,
+          name: f.name,
+          content: f.content,
+          lastModified: f.lastModified,
+        })),
+        activeFileId: this.activeFileId,
+        openFiles: this.openFiles,
+        lastOutput: this.lastOutput,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(this.storageKey, JSON.stringify(payload));
+    } catch (err) {
+      console.warn("PyIDE: Failed to save to localStorage:", err);
+    }
+  }
+
+  loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.files) || data.files.length === 0)
+        return;
+
+      this.files = data.files.map((f) => ({
+        id: f.id,
+        name: f.name,
+        content: f.content,
+        lastModified: f.lastModified || Date.now(),
+      }));
+      this.activeFileId = data.activeFileId || this.files[0]?.id;
+      this.openFiles =
+        Array.isArray(data.openFiles) && data.openFiles.length > 0
+          ? data.openFiles
+          : [this.activeFileId];
+      this.lastOutput =
+        typeof data.lastOutput === "string" ? data.lastOutput : "";
+
+      // Sync UI
+      this.loadActiveFile();
+      this.renderFileTabs();
+      if (this.lastOutput) {
+        this.updateOutput(this.lastOutput);
+      }
+    } catch (err) {
+      console.warn("PyIDE: Failed to load from localStorage:", err);
+    }
   }
 
   // Initialize the component
   init() {
     this.render();
     this.bindEvents();
+    // Load any saved state from localStorage
+    this.loadFromStorage();
   }
 
   // Render the component UI
@@ -432,6 +491,8 @@ class PyIDEWebComponent extends HTMLElement {
           detail: { content, fileName: activeFile?.name },
         })
       );
+      // Auto-save on input debounce
+      this.saveToStorage();
     }, 300);
   }
 
@@ -449,6 +510,8 @@ class PyIDEWebComponent extends HTMLElement {
           },
         })
       );
+      // Persist on change
+      this.saveToStorage();
     }
   }
 
@@ -473,6 +536,9 @@ class PyIDEWebComponent extends HTMLElement {
 
   // Handle save button click
   handleSave() {
+    // Persist first
+    this.saveToStorage();
+
     this.dispatchEvent(
       new CustomEvent("save", {
         detail: {
@@ -803,10 +869,12 @@ class PyIDEWebComponent extends HTMLElement {
   }
 
   addFile() {
-    const name =
-      prompt("Enter file name (e.g., script.py):") ||
-      `file${this.files.length + 1}.py`;
+    const name = prompt("Enter file name (e.g., script.py):");
     if (!name) return;
+
+    if (!name.endsWith(".py")) {
+      name += ".py";
+    }
 
     const id = "file-" + Math.random().toString(36).substr(2, 9);
     const newFile = {
@@ -820,6 +888,7 @@ class PyIDEWebComponent extends HTMLElement {
     this.openFiles.push(id);
     this.selectFile(id);
     this.renderFileTabs();
+    this.saveToStorage();
   }
 
   selectFile(fileId) {
@@ -829,6 +898,7 @@ class PyIDEWebComponent extends HTMLElement {
     this.activeFileId = fileId;
     this.loadActiveFile();
     this.renderFileTabs();
+    this.saveToStorage();
   }
 
   closeFile(fileId) {
@@ -851,6 +921,7 @@ class PyIDEWebComponent extends HTMLElement {
       }
 
       this.renderFileTabs();
+      this.saveToStorage();
     }
   }
 
