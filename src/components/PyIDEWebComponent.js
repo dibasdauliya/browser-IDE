@@ -222,6 +222,16 @@ class PyIDEWebComponent extends HTMLElement {
           border-right: 1px solid #3e3e3e;
         }
 
+        .py-ide-divider {
+          width: 6px;
+          background: #3e3e3e;
+          cursor: col-resize;
+        }
+
+        .py-ide-divider:hover {
+          background: #5a5a5c;
+        }
+
         .py-ide-file-tabs {
           background: #252526;
           display: flex;
@@ -322,7 +332,8 @@ class PyIDEWebComponent extends HTMLElement {
         }
 
         .py-ide-output-section {
-          width: 300px;
+          flex: 1 1 auto;
+          min-width: 240px;
           display: flex;
           flex-direction: column;
           background: #252526;
@@ -375,11 +386,18 @@ class PyIDEWebComponent extends HTMLElement {
           background: #5a5a5c;
         }
 
+        #fileTabs {
+          display: flex;
+          flex-wrap: wrap;
+        }
+
         @media (max-width: 768px) {
           .py-ide-main {
             flex-direction: column;
           }
           
+          .py-ide-divider { display: none; }
+
           .py-ide-output-section {
             width: auto;
             height: 200px;
@@ -396,11 +414,10 @@ class PyIDEWebComponent extends HTMLElement {
       <div class="py-ide-container">
         <div class="py-ide-header">
           <div class="py-ide-status loading" id="status">Loading Python...</div>
-          <div style="font-size: 12px; color: #888;">PyIDE Web Component</div>
         </div>
 
         <div class="py-ide-main">
-          <div class="py-ide-editor-section">
+          <div class="py-ide-editor-section" id="editorPane" style="min-width:240px; flex-basis: 65%;">
             <div class="py-ide-file-tabs">
               <button class="py-ide-add-file" id="addFileBtn" title="Add new file">+</button>
               <div id="fileTabs"></div>
@@ -417,7 +434,9 @@ class PyIDEWebComponent extends HTMLElement {
             </div>
           </div>
 
-          <div class="py-ide-output-section">
+          <div class="py-ide-divider" id="divider"></div>
+
+          <div class="py-ide-output-section" id="outputPane" style="flex-basis: 35%;">
             <div class="py-ide-output-header">
               <div class="py-ide-output-title">Output</div>
               <button class="py-ide-button secondary" id="clearOutputBtn" style="padding: 4px 8px; font-size: 11px;">Clear</button>
@@ -437,6 +456,9 @@ class PyIDEWebComponent extends HTMLElement {
     const clearOutputBtn = this.shadowRoot.getElementById("clearOutputBtn");
     const addFileBtn = this.shadowRoot.getElementById("addFileBtn");
     const saveBtn = this.shadowRoot.getElementById("saveBtn");
+    const divider = this.shadowRoot.getElementById("divider");
+    const editorPane = this.shadowRoot.getElementById("editorPane");
+    const outputPane = this.shadowRoot.getElementById("outputPane");
 
     // Editor events
     editor.addEventListener("input", (e) => {
@@ -470,6 +492,43 @@ class PyIDEWebComponent extends HTMLElement {
 
     // Load initial file
     this.loadActiveFile();
+
+    // Resizer drag logic
+    let isDragging = false;
+    let startX = 0;
+    let startEditorWidth = 0;
+    const minEditor = 240; // px
+    const minOutput = 240; // px
+
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const delta = e.clientX - startX;
+      const container = this.shadowRoot.querySelector(".py-ide-main");
+      const containerRect = container.getBoundingClientRect();
+      const newEditorWidth = Math.max(
+        minEditor,
+        Math.min(containerRect.width - minOutput, startEditorWidth + delta)
+      );
+      const editorBasis = (newEditorWidth / containerRect.width) * 100;
+      const outputBasis = 100 - editorBasis;
+      editorPane.style.flexBasis = editorBasis + "%";
+      outputPane.style.flexBasis = outputBasis + "%";
+    };
+
+    const onMouseUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    divider.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startEditorWidth = editorPane.getBoundingClientRect().width;
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
   }
 
   // Handle editor input with debouncing
