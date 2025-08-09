@@ -160,6 +160,10 @@ class PyIDEWebComponent extends HTMLElement {
     this.render();
     this.bindEvents();
     this.loadFromStorage();
+    // ensure initial tabs render when there is no saved state
+    if (this.files && this.files.length > 0) {
+      this.renderFileTabs();
+    }
     // initialize CodeMirror after DOM is ready
     setTimeout(() => this.initializeCodeMirror(), 50);
   }
@@ -390,7 +394,7 @@ class PyIDEWebComponent extends HTMLElement {
         }
 
         .py-ide-file-tab:hover {
-          background: #37373d;
+          background:rgba(55, 55, 61, 0.68);
         }
 
         .py-ide-file-tab-close {
