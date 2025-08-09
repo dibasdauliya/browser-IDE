@@ -1,25 +1,9 @@
-/**
- * PyIDE Web Component
- * A standalone Python IDE that can be used as a web component
- *
- * Usage:
- * const pyIDE = document.createElement('py-ide');
- * document.body.appendChild(pyIDE);
- *
- * API:
- * - pyIDE.code: Array of file objects with name and content
- * - pyIDE.output: Latest execution output
- * - Events: 'input', 'change', 'submit'
- */
-
 class PyIDEWebComponent extends HTMLElement {
   constructor() {
     super();
 
-    // Create shadow DOM
     this.attachShadow({ mode: "open" });
 
-    // Initialize state
     this.storageKey = this.getAttribute("storage-key") || "py-ide";
     this.files = [
       {
@@ -44,6 +28,166 @@ class PyIDEWebComponent extends HTMLElement {
     this.init();
   }
 
+  initializeCodeMirror() {
+    const addStyle = (href) => {
+      if (document.querySelector(`link[href="${href}"]`)) return;
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    };
+
+    const addScript = (src, isModule = false) =>
+      new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          resolve();
+          return;
+        }
+        const s = document.createElement("script");
+        s.src = src;
+        if (isModule) {
+          s.type = "module";
+        }
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+
+    if (!window.__pyide_codemirror_loaded) {
+      // CodeMirror CSS
+      addStyle(
+        "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+      );
+      addStyle(
+        "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css"
+      );
+
+      // CodeMirror library and addons
+      window.__pyide_codemirror_loaded = addScript(
+        "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
+      )
+        .then(() =>
+          addScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"
+          )
+        )
+        .then(() =>
+          addScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"
+          )
+        )
+        .then(() =>
+          addScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"
+          )
+        )
+        .then(() =>
+          addScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"
+          )
+        );
+    }
+
+    Promise.resolve(window.__pyide_codemirror_loaded)
+      .then(() => {
+        console.log("CodeMirror ready");
+        this.initEditor();
+      })
+      .catch((err) => {
+        console.warn("CodeMirror failed to load:", err);
+        this.initFallbackEditor();
+      });
+  }
+
+  initEditor() {
+    const editorContainer = this.shadowRoot.getElementById("editorContainer");
+    if (!editorContainer) {
+      console.error("Editor container not found");
+      this.initFallbackEditor();
+      return;
+    }
+
+    if (this.codeMirror) {
+      console.warn("CodeMirror already initialized");
+      return;
+    }
+
+    const activeFile = this.getActiveFile();
+    this.codeMirror = window.CodeMirror(editorContainer, {
+      value: activeFile ? activeFile.content : "",
+      mode: "python",
+      theme: "material-darker",
+      lineNumbers: true,
+      lineWrapping: true,
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      styleActiveLine: true,
+      indentUnit: 4,
+      tabSize: 4,
+      indentWithTabs: false,
+      extraKeys: {
+        "Ctrl-Space": "autocomplete",
+        Tab: (cm) => {
+          if (cm.somethingSelected()) {
+            cm.indentSelection("add");
+          } else {
+            cm.replaceSelection(
+              Array(cm.getOption("indentUnit") + 1).join(" ")
+            );
+          }
+        },
+      },
+    });
+
+    this.codeMirror.on("change", (instance) => {
+      this.handleEditorInput(instance.getValue());
+    });
+
+    this.codeMirror.on("blur", () => {
+      this.handleEditorChange();
+    });
+
+    // ensure proper layout after mount
+    requestAnimationFrame(() => this.codeMirror && this.codeMirror.refresh());
+    setTimeout(() => this.codeMirror && this.codeMirror.refresh(), 100);
+    window.addEventListener(
+      "resize",
+      () => this.codeMirror && this.codeMirror.refresh()
+    );
+  }
+
+  init() {
+    this.render();
+    this.bindEvents();
+    this.loadFromStorage();
+    // initialize CodeMirror after DOM is ready
+    setTimeout(() => this.initializeCodeMirror(), 50);
+  }
+
+  // Fallback textarea editor
+  initFallbackEditor() {
+    const editorContainer = this.shadowRoot.getElementById("editorContainer");
+    if (!editorContainer) return;
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "py-ide-editor-fallback";
+    textarea.id = "editor";
+    textarea.placeholder = "Enter your Python code here...";
+
+    const activeFile = this.getActiveFile();
+    if (activeFile) textarea.value = activeFile.content;
+
+    textarea.addEventListener("input", (e) => {
+      this.handleEditorInput(e.target.value);
+    });
+
+    textarea.addEventListener("blur", () => {
+      this.handleEditorChange();
+    });
+
+    editorContainer.appendChild(textarea);
+  }
+
   connectedCallback() {
     this.loadPyodide();
   }
@@ -52,9 +196,11 @@ class PyIDEWebComponent extends HTMLElement {
     if (this.inputTimeout) {
       clearTimeout(this.inputTimeout);
     }
+    if (this.codeMirror) {
+      this.codeMirror.toTextArea();
+    }
   }
 
-  // Public API properties
   get code() {
     return this.files.map((file) => ({
       name: file.name,
@@ -66,13 +212,11 @@ class PyIDEWebComponent extends HTMLElement {
     return this.lastOutput;
   }
 
-  // Method to set code programmatically
   setCode(filesArray) {
     if (!Array.isArray(filesArray) || filesArray.length === 0) {
       return;
     }
 
-    // Clear existing files
     this.files = [];
     this.openFiles = [];
     this.activeFileId = null;
@@ -96,14 +240,12 @@ class PyIDEWebComponent extends HTMLElement {
       }
     });
 
-    // Update UI
     this.loadActiveFile();
     this.renderFileTabs();
     // Persist after setting code
     this.saveToStorage();
   }
 
-  // Persistence helpers
   saveToStorage() {
     try {
       const payload = {
@@ -157,15 +299,6 @@ class PyIDEWebComponent extends HTMLElement {
     }
   }
 
-  // Initialize the component
-  init() {
-    this.render();
-    this.bindEvents();
-    // Load any saved state from localStorage
-    this.loadFromStorage();
-  }
-
-  // Render the component UI
   render() {
     this.shadowRoot.innerHTML = `
       <style>
@@ -274,10 +407,27 @@ class PyIDEWebComponent extends HTMLElement {
         .py-ide-editor-container {
           flex: 1;
           position: relative;
+          width: 100%;
+          height: 100%;
           overflow: hidden;
         }
 
-        .py-ide-editor {
+        .py-ide-editor-wrap {
+          position: relative;
+          height: 100%;
+        }
+
+        #editorContainer {
+          height: 100%;
+          width: 100%;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .CodeMirror {
+          height: 100% !important;
+        }
+
+        .py-ide-editor-fallback {
           width: 100%;
           height: 100%;
           background: #1e1e1e;
@@ -290,6 +440,26 @@ class PyIDEWebComponent extends HTMLElement {
           line-height: 1.5;
           padding: 16px;
           box-sizing: border-box;
+        }
+
+        /* CodeMirror overrides for dark theme consistency */
+        .CodeMirror {
+          height: 100%;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .CodeMirror-focused .CodeMirror-cursor {
+          border-left: 1px solid #d4d4d4;
+        }
+
+        .CodeMirror-selected {
+          background: #264f78;
+        }
+
+        .CodeMirror-focused .CodeMirror-selected {
+          background: #264f78;
         }
 
         .py-ide-controls {
@@ -410,6 +580,8 @@ class PyIDEWebComponent extends HTMLElement {
           }
         }
       </style>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 
       <div class="py-ide-container">
         <div class="py-ide-header">
@@ -424,7 +596,9 @@ class PyIDEWebComponent extends HTMLElement {
             </div>
 
             <div class="py-ide-editor-container">
-              <textarea class="py-ide-editor" id="editor" placeholder="Enter your Python code here..."></textarea>
+              <div class="py-ide-editor-wrap">
+                <div id="editorContainer"></div>
+              </div>
             </div>
 
             <div class="py-ide-controls">
@@ -448,9 +622,7 @@ class PyIDEWebComponent extends HTMLElement {
     `;
   }
 
-  // Bind event handlers
   bindEvents() {
-    const editor = this.shadowRoot.getElementById("editor");
     const runBtn = this.shadowRoot.getElementById("runBtn");
     const clearBtn = this.shadowRoot.getElementById("clearBtn");
     const clearOutputBtn = this.shadowRoot.getElementById("clearOutputBtn");
@@ -460,16 +632,9 @@ class PyIDEWebComponent extends HTMLElement {
     const editorPane = this.shadowRoot.getElementById("editorPane");
     const outputPane = this.shadowRoot.getElementById("outputPane");
 
-    // Editor events
-    editor.addEventListener("input", (e) => {
-      this.handleEditorInput(e.target.value);
-    });
+    // Editor events are handled in initEditor() method for CodeMirror
+    // Fallback textarea events are handled in initFallbackEditor() method
 
-    editor.addEventListener("blur", () => {
-      this.handleEditorChange();
-    });
-
-    // Button events
     runBtn.addEventListener("click", () => {
       this.handleRun();
     });
@@ -497,8 +662,8 @@ class PyIDEWebComponent extends HTMLElement {
     let isDragging = false;
     let startX = 0;
     let startEditorWidth = 0;
-    const minEditor = 240; // px
-    const minOutput = 240; // px
+    const minEditor = 240;
+    const minOutput = 240;
 
     const onMouseMove = (e) => {
       if (!isDragging) return;
@@ -558,7 +723,6 @@ class PyIDEWebComponent extends HTMLElement {
   handleEditorChange() {
     const activeFile = this.getActiveFile();
     if (activeFile && activeFile.content !== this.lastContent) {
-      // Show saving state on Save button (autosave)
       const saveBtn = this.shadowRoot.getElementById("saveBtn");
       const checkSvg =
         '<svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align: -2px; margin-left:6px; fill:#4ade80;"><path d="M6.173 13.727L.946 8.5l1.414-1.414 3.813 3.813 7.466-7.466 1.414 1.414z"/></svg>';
@@ -579,9 +743,7 @@ class PyIDEWebComponent extends HTMLElement {
           },
         })
       );
-      // Persist on change
       this.saveToStorage();
-      // Show Saved ✓ briefly on Save button
       setTimeout(() => {
         if (saveBtn) {
           saveBtn.innerHTML = `Saved ${checkSvg}`;
@@ -597,7 +759,6 @@ class PyIDEWebComponent extends HTMLElement {
     }
   }
 
-  // Handle run button click
   handleRun() {
     if (!this.pyodideReady || this.isRunning) return;
 
@@ -616,9 +777,7 @@ class PyIDEWebComponent extends HTMLElement {
     this.runCode(activeFile.content);
   }
 
-  // Handle save button click
   handleSave() {
-    // Show saving state on button
     const saveBtn = this.shadowRoot.getElementById("saveBtn");
     const checkSvg =
       '<svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align: -2px; margin-left:6px; fill:#4ade80;"><path d="M6.173 13.727L.946 8.5l1.414-1.414 3.813 3.813 7.466-7.466 1.414 1.414z"/></svg>';
@@ -629,7 +788,6 @@ class PyIDEWebComponent extends HTMLElement {
       saveBtn.disabled = true;
     }
 
-    // Persist first
     this.saveToStorage();
 
     this.dispatchEvent(
@@ -642,7 +800,6 @@ class PyIDEWebComponent extends HTMLElement {
       })
     );
 
-    // Show Saved ✓ on button briefly
     setTimeout(() => {
       if (saveBtn) {
         saveBtn.innerHTML = `Saved ${checkSvg}`;
@@ -657,7 +814,6 @@ class PyIDEWebComponent extends HTMLElement {
     }, 150);
   }
 
-  // Load Pyodide
   async loadPyodide() {
     try {
       const script = document.createElement("script");
@@ -670,7 +826,7 @@ class PyIDEWebComponent extends HTMLElement {
 
           await this.pyodide.loadPackage("micropip");
 
-          // Setup Python environment (same as React version)
+          // Setup Python environment -- handles input
           await this.pyodide.runPythonAsync(`
             import warnings
             import sys
@@ -690,7 +846,7 @@ class PyIDEWebComponent extends HTMLElement {
             builtins.input = browser_input
           `);
 
-          // Install common packages
+          // install common packages
           const commonPackages = ["requests", "numpy", "matplotlib"];
           const installedSet = new Set();
 
@@ -706,7 +862,7 @@ class PyIDEWebComponent extends HTMLElement {
             }
           }
 
-          // Configure matplotlib and warnings (same as React version)
+          // configure matplotlib and warnings
           await this.setupMatplotlib();
 
           this.installedPackages = installedSet;
@@ -732,7 +888,7 @@ class PyIDEWebComponent extends HTMLElement {
     }
   }
 
-  // Setup matplotlib (same configuration as React version)
+  // to display plots images in the output and manage warnings
   async setupMatplotlib() {
     try {
       await this.pyodide.runPythonAsync(`
@@ -812,7 +968,6 @@ class PyIDEWebComponent extends HTMLElement {
     }
   }
 
-  // Run Python code
   async runCode(code) {
     if (!this.pyodideReady || this.isRunning) return;
 
@@ -931,7 +1086,6 @@ class PyIDEWebComponent extends HTMLElement {
     }
   }
 
-  // Format error messages (same as React version)
   formatError(error) {
     let cleanError = error;
 
@@ -970,7 +1124,7 @@ class PyIDEWebComponent extends HTMLElement {
     return cleanError;
   }
 
-  // File management methods
+  // file management methods
   getActiveFile() {
     return this.files.find((f) => f.id === this.activeFileId) || null;
   }
@@ -1034,9 +1188,19 @@ class PyIDEWebComponent extends HTMLElement {
 
   loadActiveFile() {
     const activeFile = this.getActiveFile();
-    const editor = this.shadowRoot.getElementById("editor");
-    if (activeFile && editor) {
-      editor.value = activeFile.content;
+
+    if (activeFile) {
+      // update CodeMirror if available
+      if (this.codeMirror) {
+        this.codeMirror.setValue(activeFile.content);
+      } else {
+        // fallback to textarea editor
+        const editor = this.shadowRoot.getElementById("editor");
+        if (editor) {
+          editor.value = activeFile.content;
+        }
+      }
+
       this.lastContent = activeFile.content;
     }
   }
@@ -1061,7 +1225,7 @@ class PyIDEWebComponent extends HTMLElement {
       )
       .join("");
 
-    // Bind tab events
+    // bind tab events
     container.addEventListener("click", (e) => {
       const fileId = e.target.closest(".py-ide-file-tab")?.dataset.fileId;
       const closeId = e.target.dataset.close;
@@ -1123,10 +1287,9 @@ class PyIDEWebComponent extends HTMLElement {
   }
 }
 
-// Register the custom element
 customElements.define("py-ide", PyIDEWebComponent);
 
-// Export for module use
+// export for module use
 if (typeof module !== "undefined" && module.exports) {
   module.exports = PyIDEWebComponent;
 }
